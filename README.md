@@ -21,7 +21,7 @@ La página tiene 3 pestañas seleccionables por el usuario (la pestaña activa q
 | **Silos Nitrato**  | 8 tarjetas de silos Nitrato (mismos datos; `≈` cuando el nivel está en zona de tolva y es aproximado) |
 | **Totalizadores**  | Gráficos de tendencia diaria 07:00–19:00 de DL-5, ASE (y VE-03 si hay un silo con ese producto) y Nitrato, con su cuadro de totalizador y registro de turno 07h / 19h |
 
-La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
+La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo visible para Admin**, los demás usuarios siempre ven modo REAL), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
 
 **Descargas (Excel diario / historial 30 días): solo usuario `Admin`.** Los demás usuarios no ven los botones y el servidor responde 403 si intentan acceder a las rutas de descarga. Para Admin, los botones se muestran según la pestaña: Matriz, Nitrato o los 4 en Totalizadores. Los administradores se definen con `ADMIN_USERS` en el `.env` (por defecto `Admin`, sin distinguir mayúsculas).
 
