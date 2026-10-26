@@ -1,4 +1,6 @@
-require("dotenv").config();
+// El .env se busca siempre en la carpeta del proyecto (no en la carpeta desde donde se ejecuta PM2)
+const ENV_FILE = require("path").join(__dirname, ".env");
+const envResult = require("dotenv").config({ path: ENV_FILE });
 
 // ===== SCADA SILOS LB — Matriz + Nitrato en un solo servidor =====
 // - Login / sesión / usuarios conectados  → este archivo
@@ -32,11 +34,26 @@ const PORT = process.env.PORT || 3000;
 // (ver generate-hash.js para crear los hashes de las contraseñas)
 
 const USERS = {};
-if (process.env.USER1_NAME) USERS[process.env.USER1_NAME] = process.env.USER1_HASH;
-if (process.env.USER2_NAME) USERS[process.env.USER2_NAME] = process.env.USER2_HASH;
-if (process.env.USER3_NAME) USERS[process.env.USER3_NAME] = process.env.USER3_HASH;
-if (process.env.USER4_NAME) USERS[process.env.USER4_NAME] = process.env.USER4_HASH;
-if (process.env.USER5_NAME) USERS[process.env.USER5_NAME] = process.env.USER5_HASH;
+for (var u = 1; u <= 5; u++) {
+  var userName = (process.env["USER" + u + "_NAME"] || "").trim();
+  var userHash = (process.env["USER" + u + "_HASH"] || "").trim().replace(/^["']|["']$/g, "");
+  if (userName) USERS[userName] = userHash;
+}
+
+// Diagnóstico al arrancar (no muestra contraseñas ni hashes)
+if (envResult.error) {
+  console.warn("⚠ No se encontró el archivo .env en " + ENV_FILE + " → no hay usuarios para iniciar sesión");
+}
+if (Object.keys(USERS).length === 0) {
+  console.warn("⚠ No hay usuarios configurados (USER1_NAME / USER1_HASH …). Ningún login funcionará.");
+} else {
+  console.log("Usuarios cargados desde .env: " + Object.keys(USERS).join(", "));
+  Object.keys(USERS).forEach(function (name) {
+    if (!/^\$2[aby]\$\d{2}\$.{53}$/.test(USERS[name])) {
+      console.warn("⚠ El hash del usuario \"" + name + "\" no tiene formato bcrypt válido. Generarlo con: node generate-hash.js \"contraseña\"");
+    }
+  });
+}
 
 async function validateLogin(username, password) {
   var hash = USERS[username];
