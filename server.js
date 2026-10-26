@@ -49,6 +49,26 @@ function requireAuth(req, res, next) {
   return res.redirect("/login.html");
 }
 
+// ===== ROL ADMIN =====
+// Solo los usuarios administradores pueden descargar Excel / historial.
+// Por defecto el usuario "Admin" (sin distinguir mayúsculas). Se puede cambiar con
+// ADMIN_USERS=Admin,otroUsuario en el .env
+
+const ADMIN_USERS = (process.env.ADMIN_USERS || "Admin")
+  .split(",")
+  .map(function (u) { return u.trim().toLowerCase(); })
+  .filter(Boolean);
+
+function isAdmin(username) {
+  return !!username && ADMIN_USERS.indexOf(String(username).toLowerCase()) >= 0;
+}
+
+function requireAdmin(req, res, next) {
+  if (!req.session || !req.session.user) return res.redirect("/login.html");
+  if (isAdmin(req.session.user)) return next();
+  return res.status(403).send("Acceso restringido: solo el usuario administrador puede descargar esta información");
+}
+
 var sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "cambia_esta_clave_en_produccion",
   resave: false,
@@ -103,7 +123,7 @@ app.get("/logout", function (req, res) {
 
 // El propio frontend puede pedir quién está logueado
 app.get("/whoami", requireAuth, function (req, res) {
-  res.json({ user: req.session.user });
+  res.json({ user: req.session.user, isAdmin: isAdmin(req.session.user) });
 });
 
 // ===== SOCKET.IO — sesión compartida en todos los namespaces =====
@@ -138,8 +158,8 @@ io.on("connection", function (socket) {
 
 // ===== SISTEMAS =====
 
-setupMatriz({ app: app, io: matrizNsp, requireAuth: requireAuth, baseDir: BASE_DIR });
-setupNitrato({ app: app, io: nitratoNsp, requireAuth: requireAuth, baseDir: BASE_DIR });
+setupMatriz({ app: app, io: matrizNsp, requireAuth: requireAuth, requireAdmin: requireAdmin, baseDir: BASE_DIR });
+setupNitrato({ app: app, io: nitratoNsp, requireAuth: requireAuth, requireAdmin: requireAdmin, baseDir: BASE_DIR });
 
 // login.html queda servido por la ruta /login.html de arriba.
 // Todo lo demás (dashboard, JS, CSS del panel) requiere sesión activa.

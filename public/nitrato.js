@@ -122,11 +122,10 @@ function isSelectedDateToday() {
 // ===== MQTT STATUS =====
 
 function updateMqttStatus() {
-  const el = document.getElementById("mqttStatusNitrato");
-  if (!el) return;
-  el.textContent = mqttSignalOk
-    ? `Nitrato: 🟢 MQTT Activo (${lastMqttUpdate})`
-    : `Nitrato: 🔴 Sin señal (${lastMqttUpdate})`;
+  // Estado de señal único para Matriz y Nitrato (mismo HMI / broker): ver main.js
+  if (window.scadaMqttStatus) {
+    window.scadaMqttStatus.update("nitrato", mqttSignalOk, lastMqttUpdate, lastMqttHeartbeat);
+  }
 }
 
 // ===== GAUGE =====

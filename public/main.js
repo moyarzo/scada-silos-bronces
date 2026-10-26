@@ -57,13 +57,55 @@ window.addEventListener("hashchange", function () {
   });
 })();
 
+// ===== ESTADO DE SEÑAL MQTT (único para Matriz y Nitrato) =====
+// matriz.js y nitrato.js reportan aquí su señal; se muestra un solo estado:
+// activo si cualquiera de los dos recibió datos recientemente, con la hora del último dato.
+
+window.scadaMqttStatus = (function () {
+  const state = {};
+
+  function render() {
+    const el = document.getElementById("mqttStatus");
+    if (!el) return;
+
+    let ok = false;
+    let lastTime = "--:--:--";
+    let lastBeat = 0;
+
+    Object.keys(state).forEach(function (key) {
+      const s = state[key];
+      if (s.ok) ok = true;
+      if (s.heartbeat && s.heartbeat >= lastBeat) {
+        lastBeat = s.heartbeat;
+        lastTime = s.time;
+      }
+    });
+
+    el.textContent = ok
+      ? `🟢 MQTT Activo (${lastTime})`
+      : `🔴 Sin señal (${lastTime})`;
+  }
+
+  return {
+    update: function (system, ok, time, heartbeat) {
+      state[system] = { ok: !!ok, time: time || "--:--:--", heartbeat: heartbeat || 0 };
+      render();
+    }
+  };
+})();
+
 // ===== SESIÓN =====
 
-// Quién soy (usa la cookie de sesión ya activa)
+// Quién soy (usa la cookie de sesión ya activa).
+// Los botones de descarga (Excel / historial) solo se muestran al usuario Admin.
 fetch("/whoami")
   .then(function (res) { return res.json(); })
   .then(function (data) {
     document.getElementById("currentUser").innerText = "Usuario: " + data.user;
+
+    document.querySelectorAll(".admin-only").forEach(function (el) {
+      el.hidden = !data.isAdmin;
+    });
   })
   .catch(function () {});
 

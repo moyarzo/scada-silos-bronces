@@ -455,6 +455,11 @@ body {
   color: #ca8a04;
 }
 
+/* Botones de exportación: solo usuario Admin */
+.admin-only[hidden] {
+  display: none !important;
+}
+
 /* Botones de exportación según la subpágina activa (en Totalizadores se ven todos) */
 body[data-page="matriz"] .only-nitrato,
 body[data-page="nitrato"] .only-matriz {
@@ -487,6 +492,21 @@ body[data-page="nitrato"] .only-matriz {
 
 .totals-panel .chart-wrapper canvas {
   height: 340px !important;
+}
+
+/* Pantallas medianas: la barra de sesión pasa bajo el título para no taparlo */
+@media (max-width: 1750px) and (min-width: 769px) {
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .session-bar {
+    position: static;
+    transform: none;
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
 }
 
 @media (max-width: 1200px) {

@@ -21,7 +21,9 @@ La página tiene 3 pestañas seleccionables por el usuario (la pestaña activa q
 | **Silos Nitrato**  | 8 tarjetas de silos Nitrato (mismos datos; `≈` cuando el nivel está en zona de tolva y es aproximado) |
 | **Totalizadores**  | Gráficos de tendencia diaria 07:00–19:00 de DL-5, ASE (y VE-03 si hay un silo con ese producto) y Nitrato, con su cuadro de totalizador y registro de turno 07h / 19h |
 
-La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas), estado MQTT de cada sistema, selector de día de los gráficos y botones de descarga. Los botones se muestran según la pestaña: Matriz, Nitrato o ambos en Totalizadores.
+La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
+
+**Descargas (Excel diario / historial 30 días): solo usuario `Admin`.** Los demás usuarios no ven los botones y el servidor responde 403 si intentan acceder a las rutas de descarga. Para Admin, los botones se muestran según la pestaña: Matriz, Nitrato o los 4 en Totalizadores. Los administradores se definen con `ADMIN_USERS` en el `.env` (por defecto `Admin`, sin distinguir mayúsculas).
 
 ---
 
@@ -36,7 +38,7 @@ La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas), estado 
 - Historial de 30 días navegable por fecha
 - Modo REAL / DEMO
 - Cambio de producto por silo (Matriz)
-- Exportación Excel diario y CSV historial 30 días, por sistema
+- Exportación Excel diario y CSV historial 30 días, por sistema (solo usuario Admin)
 
 ---
 
@@ -60,10 +62,12 @@ Volumen con tolva de pirámide truncada (2.78 → 3.48 m, 0.78 m) + prisma 3.48 
 
 Payload Delta HMI con word-swap: `{ "d": { "tipo": 12345678 } }` (uint32 → float = distancia del radar en metros).
 
-| Sistema  | Topic suscrito                 | Ejemplo                                |
-|----------|--------------------------------|----------------------------------------|
-| Matriz   | `planta/losbronces/silos/#`    | `planta/losbronces/silos/tanque1`      |
-| Nitrato  | `planta/losbronces/nitrato/#`  | `planta/losbronces/nitrato/tanque1`    |
+| Sistema  | Topics                                        | Silo                    |
+|----------|-----------------------------------------------|-------------------------|
+| Matriz   | `planta/losbronces/silos/tanque1` … `tanque8` | Silo 1 … Silo 8         |
+| Nitrato  | `silo11` … `silo18`                           | Silo 1 … Silo 8 Nitrato |
+
+Nitrato identifica el silo por el último segmento del topic, así que acepta `silo11` solo o con prefijo (`planta/losbronces/silos/silo11`, `planta/losbronces/nitrato/silo11`). Por defecto se suscribe a esas tres variantes; para fijar otras, usar `MQTT_TOPIC_NITRATO` (separadas por coma).
 
 Por defecto ambos sistemas se conectan a `mqtt://localhost:1883`. Si el HMI de Nitrato publica en otro broker, definir `MQTT_URL_NITRATO` en el `.env` (ver `env.example`).
 
@@ -146,6 +150,8 @@ scada-matriz/
 | `historial_YYYYMMDD.csv` | `resumen_nitrato_YYYYMMDD.csv` | CSV historial 30 días                        |
 
 ### Rutas HTTP
+
+Todas las rutas de descarga requieren usuario Admin.
 
 | Matriz                          | Nitrato                          |
 |---------------------------------|----------------------------------|

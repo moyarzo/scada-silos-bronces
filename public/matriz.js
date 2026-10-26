@@ -146,12 +146,10 @@ function setProductForCurrentMode(tanque, product) {
 // ===== MQTT STATUS =====
 
 function updateMqttStatus() {
-  const el = document.getElementById("mqttStatusMatriz");
-  if (!el) return;
-
-  el.textContent = mqttSignalOk
-    ? `Matriz: 🟢 MQTT Activo (${lastMqttUpdate})`
-    : `Matriz: 🔴 Sin señal (${lastMqttUpdate})`;
+  // Estado de señal único para Matriz y Nitrato (mismo HMI / broker): ver main.js
+  if (window.scadaMqttStatus) {
+    window.scadaMqttStatus.update("matriz", mqttSignalOk, lastMqttUpdate, lastMqttHeartbeat);
+  }
 }
 
 // ===== GAUGE =====

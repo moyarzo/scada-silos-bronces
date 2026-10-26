@@ -35,16 +35,16 @@
         Modo REAL
       </label>
     </div>
-    <div class="mqtt-status" id="mqttStatusMatriz">Matriz: 🔴 Sin señal (--:--:--)</div>
-    <div class="mqtt-status" id="mqttStatusNitrato">Nitrato: 🔴 Sin señal (--:--:--)</div>
+    <div class="mqtt-status" id="mqttStatus">🔴 Sin señal (--:--:--)</div>
     <div class="chart-date-bar">
       <label for="chartDateSelect">Día gráficos:</label>
       <select id="chartDateSelect"></select>
     </div>
-    <button id="exportBtnMatriz" class="export-btn only-matriz">Excel diario Matriz</button>
-    <button id="exportTrendBtnMatriz" class="export-btn only-matriz">Historial 30 días Matriz</button>
-    <button id="exportBtnNitrato" class="export-btn export-btn-nitrato only-nitrato">Excel diario Nitrato</button>
-    <button id="exportTrendBtnNitrato" class="export-btn export-btn-nitrato only-nitrato">Historial 30 días Nitrato</button>
+    <!-- Descargas: solo visibles para el usuario Admin (main.js); el servidor también las restringe -->
+    <button id="exportBtnMatriz" class="export-btn admin-only only-matriz" hidden>Excel diario Matriz</button>
+    <button id="exportTrendBtnMatriz" class="export-btn admin-only only-matriz" hidden>Historial 30 días Matriz</button>
+    <button id="exportBtnNitrato" class="export-btn export-btn-nitrato admin-only only-nitrato" hidden>Excel diario Nitrato</button>
+    <button id="exportTrendBtnNitrato" class="export-btn export-btn-nitrato admin-only only-nitrato" hidden>Historial 30 días Nitrato</button>
   </div>
 
   <!-- ===== PÁGINA 1: SILOS MATRIZ ===== -->
