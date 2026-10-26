@@ -65,9 +65,9 @@ Payload Delta HMI con word-swap: `{ "d": { "tipo": 12345678 } }` (uint32 → flo
 | Sistema  | Topics                                        | Silo                    |
 |----------|-----------------------------------------------|-------------------------|
 | Matriz   | `planta/losbronces/silos/tanque1` … `tanque8` | Silo 1 … Silo 8         |
-| Nitrato  | `silo11` … `silo18`                           | Silo 1 … Silo 8 Nitrato |
+| Nitrato  | `planta/losbronces/silos/tanque11` … `tanque18` | Silo 1 … Silo 8 Nitrato |
 
-Nitrato identifica el silo por el último segmento del topic, así que acepta `silo11` solo o con prefijo (`planta/losbronces/silos/silo11`, `planta/losbronces/nitrato/silo11`). Por defecto se suscribe a esas tres variantes; para fijar otras, usar `MQTT_TOPIC_NITRATO` (separadas por coma).
+Matriz y Nitrato usan el mismo HMI y prefijo: `tanque1`…`tanque8` son Matriz y `tanque11`…`tanque18` son Nitrato. Nitrato identifica el silo por el último segmento del topic (también acepta `silo11`…`silo18` como alias). Para cambiar la suscripción, usar `MQTT_TOPIC_NITRATO` (separadas por coma).
 
 Por defecto ambos sistemas se conectan a `mqtt://localhost:1883`. Si el HMI de Nitrato publica en otro broker, definir `MQTT_URL_NITRATO` en el `.env` (ver `env.example`).
 
