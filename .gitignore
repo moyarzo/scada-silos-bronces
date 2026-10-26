@@ -1,0 +1,16 @@
+node_modules
+.env
+# Datos generados en runtime (Matriz)
+siloHistoryData.json
+dailySummary.json
+
+# Datos generados en runtime (Nitrato)
+nitrato_turnData.json
+nitrato_historyData.json
+nitrato_siloHistoryData.json
+nitrato_dailySummary.json
+
+# Exportaciones y logs
+exports/
+logs/
+*.log

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Acceso - Silos LB</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0f172a;
+  }
+  .card {
+    background: #1e293b;
+    padding: 32px 36px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    width: 280px;
+    text-align: center;
+  }
+  .card h1 {
+    color: #f1f5f9;
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #f1f5f9;
+    box-sizing: border-box;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #1d4ed8;
+  }
+  .error {
+    color: #f87171;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Monitoreo Silos Matriz y Nitrato</h1>
+    <div class="error" id="errorMsg" style="display:none;">Usuario o contraseña incorrectos</div>
+    <form method="POST" action="/login">
+      <input type="text" name="username" placeholder="Usuario" autocomplete="username" required>
+      <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required>
+      <button type="submit">Ingresar</button>
+    </form>
+  </div>
+
+  <script>
+    if (window.location.search.includes("error=1")) {
+      document.getElementById("errorMsg").style.display = "block";
+    }
+  </script>
+</body>
+</html>

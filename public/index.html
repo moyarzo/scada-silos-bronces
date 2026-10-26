@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA SILOS LB</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="matriz">
+  <div class="header">
+    <img src="logo.png" class="logo" alt="Logo">
+    <h1>SISTEMA MONITOREO SILOS - P. LOS BRONCES</h1>
+    <div class="session-bar">
+      <span class="current-user" id="currentUser"></span>
+      <span class="connected-users" id="connectedUsers">Conectados: --</span>
+      <a href="/logout">Cerrar sesión</a>
+    </div>
+  </div>
+
+  <!-- ===== SELECTOR DE SUBPÁGINAS ===== -->
+  <nav class="page-tabs" role="tablist">
+    <button class="page-tab" role="tab" data-page="matriz">Silos Matriz</button>
+    <button class="page-tab" role="tab" data-page="nitrato">Silos Nitrato</button>
+    <button class="page-tab" role="tab" data-page="totales">Totalizadores</button>
+  </nav>
+
+  <div class="mode-bar">
+    <div class="mode-selector">
+      <label>
+        <input type="radio" name="mode" value="demo">
+        Modo DEMO
+      </label>
+      <label>
+        <input type="radio" name="mode" value="real" checked>
+        Modo REAL
+      </label>
+    </div>
+    <div class="mqtt-status" id="mqttStatusMatriz">Matriz: 🔴 Sin señal (--:--:--)</div>
+    <div class="mqtt-status" id="mqttStatusNitrato">Nitrato: 🔴 Sin señal (--:--:--)</div>
+    <div class="chart-date-bar">
+      <label for="chartDateSelect">Día gráficos:</label>
+      <select id="chartDateSelect"></select>
+    </div>
+    <button id="exportBtnMatriz" class="export-btn only-matriz">Excel diario Matriz</button>
+    <button id="exportTrendBtnMatriz" class="export-btn only-matriz">Historial 30 días Matriz</button>
+    <button id="exportBtnNitrato" class="export-btn export-btn-nitrato only-nitrato">Excel diario Nitrato</button>
+    <button id="exportTrendBtnNitrato" class="export-btn export-btn-nitrato only-nitrato">Historial 30 días Nitrato</button>
+  </div>
+
+  <!-- ===== PÁGINA 1: SILOS MATRIZ ===== -->
+  <section class="page" id="page-matriz" data-page="matriz">
+    <h2 class="page-title">Silos Matriz</h2>
+    <div class="grid" id="gridMatriz"></div>
+  </section>
+
+  <!-- ===== PÁGINA 2: SILOS NITRATO ===== -->
+  <section class="page" id="page-nitrato" data-page="nitrato">
+    <h2 class="page-title page-title-nitrato">Silos Nitrato de Amonio</h2>
+    <div class="grid" id="gridNitrato"></div>
+  </section>
+
+  <!-- ===== PÁGINA 3: GRÁFICOS TOTALIZADORES ===== -->
+  <section class="page" id="page-totales" data-page="totales">
+    <h2 class="page-title">Totalizadores</h2>
+    <div class="totals-panel">
+      <div class="top-panel" id="topPanelMatriz"></div>
+      <div class="top-panel" id="topPanelNitrato"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    &#169; 2026 Engineered and developed by MOH (marco.oyarzo@enaex.com) | All rights reserved
+  </footer>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <script src="main.js"></script>
+  <script src="matriz.js"></script>
+  <script src="nitrato.js"></script>
+</body>
+</html>
