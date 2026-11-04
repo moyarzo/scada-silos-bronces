@@ -56,6 +56,8 @@ La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo v
 
 Volumen con tolva de pirámide truncada (2.78 → 3.48 m, 0.78 m) + prisma 3.48 × 3.48 × 5.95 m = 79.73 m³; densidad 750 kg/m³; % de llenado volumétrico.
 
+**Ajuste empírico de la tolva (silo vacío).** Bajo 0.78 m (zona de tolva) el volumen geométrico se multiplica por un factor que baja linealmente desde 1 (borde de la tolva) hasta el valor que hace que el silo vacío (≈0.09 m) muestre la masa residual real: **0.10 t** por defecto. Se ajusta sin tocar código con `NITRATO_MASA_VACIO_TON` en el `.env` y `pm2 restart scada-silos`. Sobre 0.78 m no hay cambios.
+
 ---
 
 ## MQTT — Topics
