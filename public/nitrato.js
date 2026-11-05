@@ -6,21 +6,21 @@
 
 const socket = io("/nitrato");
 
-// ===== CONSTANTES SILO NITRATO =====
-// Tolva inferior: pirámide truncada cuadrada
-//   base inferior 2.78m, base superior 3.48m, altura 0.78m
-// Cilindro superior: sección cuadrada 3.48x3.48m, altura 5.95m
-// Volumen total: 79.73 m³
+// ===== CONSTANTES SILO NITRATO (igual a la planilla "Cálculo de MMPP en Silos") =====
+// Columna 3.48 × 3.48 × 5.95 m · Embudo intermedio 3.48 → 2.78 m, alto 0.78 m
+// Embudos finales: 2 × (1.39 × 2.78 → 0.32 × 0.38 m), alto 1.16 m
+// Alto total 7.89 m · Volumen total 83.34 m³ · nivel medido desde el fondo de los embudos finales.
+// (En modo REAL el nivel, volumen y % vienen calculados del servidor; esto se usa en modo DEMO y en el dibujo.)
 
-const N_TOLVA_HEIGHT = 0.78;
 const N_CYL_HEIGHT   = 5.95;
-const N_MAX_HEIGHT   = N_TOLVA_HEIGHT + N_CYL_HEIGHT;  // 6.73 m
-const N_A_INF        = 2.78;   // lado base inferior tolva
-const N_A_SUP        = 3.48;   // lado base superior tolva = lado cilindro
-const N_DA           = N_A_SUP - N_A_INF;              // 0.70
-const N_B            = N_DA / N_TOLVA_HEIGHT;           // pendiente interpolación
-const N_V_TOLVA      = 7.6734; // m³ (pirámide truncada completa)
-const N_V_TOTAL      = 79.730; // m³
+const N_CYL_SIDE     = 3.48;
+const N_INT_HEIGHT   = 0.78;
+const N_INT_SIDE_INF = 2.78;
+const N_FIN_HEIGHT   = 1.16;
+const N_FIN_SUP      = [1.39, 2.78];
+const N_FIN_INF      = [0.32, 0.38];
+const N_TOLVA_HEIGHT = N_INT_HEIGHT + N_FIN_HEIGHT;     // 1.94 m (embudos)
+const N_MAX_HEIGHT   = N_TOLVA_HEIGHT + N_CYL_HEIGHT;   // 7.89 m
 
 const PRODUCT_ORDER = ["Nitrato"];
 
@@ -57,15 +57,26 @@ for (let i = 1; i <= 8; i++) {
 
 // ===== CÁLCULO DE VOLUMEN =====
 
+function frustum(h, areaSup, areaInf) {
+  return (h / 3) * (areaSup + areaInf + Math.sqrt(areaSup * areaInf));
+}
+
 function calculateVolume(level) {
   const s = Math.max(0, Math.min(N_MAX_HEIGHT, level));
-  if (s <= N_TOLVA_HEIGHT) {
-    // Integral de (A_INF + B·y)² dy de 0 a s
-    const A = N_A_INF, B = N_B;
-    return (Math.pow(A + B * s, 3) - Math.pow(A, 3)) / (3 * B);
+  const hFin = Math.min(s, N_FIN_HEIGHT);
+  const f1 = N_FIN_INF[0] + (N_FIN_SUP[0] - N_FIN_INF[0]) * hFin / N_FIN_HEIGHT;
+  const f2 = N_FIN_INF[1] + (N_FIN_SUP[1] - N_FIN_INF[1]) * hFin / N_FIN_HEIGHT;
+  let v = 2 * frustum(hFin, f1 * f2, N_FIN_INF[0] * N_FIN_INF[1]);
+  if (s > N_FIN_HEIGHT) {
+    const hInt = Math.min(s - N_FIN_HEIGHT, N_INT_HEIGHT);
+    const side = N_INT_SIDE_INF + (N_CYL_SIDE - N_INT_SIDE_INF) * hInt / N_INT_HEIGHT;
+    v += frustum(hInt, side * side, N_INT_SIDE_INF * N_INT_SIDE_INF);
   }
-  return N_V_TOLVA + N_A_SUP * N_A_SUP * (s - N_TOLVA_HEIGHT);
+  if (s > N_TOLVA_HEIGHT) v += N_CYL_SIDE * N_CYL_SIDE * (s - N_TOLVA_HEIGHT);
+  return v;
 }
+
+const N_V_TOTAL = calculateVolume(N_MAX_HEIGHT);       // 83.34 m³
 
 function calculateMassTon(volume, product) {
   return (volume * PRODUCTS[product].density) / 1000;
@@ -476,7 +487,7 @@ function render() {
         </div>
         <div class="tank-wrapper">
           <div class="scale">
-            <div>6.73</div><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div><div>0</div>
+            <div>7.89</div><div>6</div><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div><div>0</div>
           </div>
           <div class="tank-container">
             <div class="tank-rect">

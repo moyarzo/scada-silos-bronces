@@ -46,19 +46,27 @@ La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo v
 
 **Matriz** — `nivel = 5.92 − distancia_radar × 0.98`, volumen cono + cilindro (46.168 m³).
 
-**Nitrato** — calibración radar → distancia real (`RADAR_CALIBRATION` en `lib/nitrato.js`). Puntos de terreno: LiDAR (junio 2026) + mediciones manuales verticales (noviembre 2026). Al arrancar se ajusta una recta `distancia = A·radar + B` por mínimos cuadrados (hoy: `1.039·radar + 0.018`, error < 9 cm). En operación se usa solo el radar.
+**Nitrato** — mismo modelo que la planilla *Cálculo de MMPP en Silos*:
 
-| Lectura radar   | Cálculo de nivel                                                   |
-|-----------------|--------------------------------------------------------------------|
-| ≤ 5.71 m        | Zona recta: nivel = 6.73 − (A·radar + B)                           |
-| 5.71 – 7.05 m   | Tolva, aproximado: interpolación hasta el punto de silo vacío. Se muestra con `≈` |
-| ≥ 7.05 m        | Silo vacío                                                         |
+| Sección            | Geometría                                                    | Volumen   |
+|--------------------|--------------------------------------------------------------|-----------|
+| Columna            | 3.48 × 3.48 m, alto 5.95 m                                   | 72.06 m³  |
+| Embudo intermedio  | pirámide truncada 3.48 → 2.78 m, alto 0.78 m                 | 7.67 m³   |
+| Embudos finales    | 2 × pirámide truncada 1.39 × 2.78 → 0.32 × 0.38 m, alto 1.16 m | 3.61 m³ |
+| **Total**          | alto 7.89 m (nivel medido desde el fondo de los embudos)     | **83.34 m³** |
 
-Para recalibrar: agregar filas `{ radar, real }` a `RADAR_CALIBRATION` y reiniciar. El log de arranque muestra la recta resultante.
+Densidad 750 kg/m³ (como la planilla; ajustable con `NITRATO_DENSIDAD`). % de llenado volumétrico.
 
-Volumen con tolva de pirámide truncada (2.78 → 3.48 m, 0.78 m) + prisma 3.48 × 3.48 × 5.95 m = 79.73 m³; % de llenado volumétrico. **Densidad efectiva 805 kg/m³** (calibrada con la recarga de 38 t y la extracción de 4 t de nov-2026); se ajusta con `NITRATO_DENSIDAD` en el `.env`.
+**Radar → distancia real.** Recta `distancia = A·radar + B` ajustada al arrancar con los puntos de `RADAR_CALIBRATION` (`lib/nitrato.js`): LiDAR jun-2026 y mediciones manuales nov-2026, todas referidas como la planilla (medición − 0.09 m de escotilla). Hoy: `1.039·radar − 0.072`, error < 9 cm. Para recalibrar, agregar filas y reiniciar; el log de arranque muestra la recta.
 
-**Ajuste empírico de la tolva (silo vacío).** Bajo 0.78 m (zona de tolva) el volumen geométrico se multiplica por un factor que baja linealmente desde 1 (borde de la tolva) hasta el valor que hace que el silo vacío (≈0.09 m) muestre la masa residual real: **0.10 t** por defecto. Se ajusta sin tocar código con `NITRATO_MASA_VACIO_TON` en el `.env` y `pm2 restart scada-silos`. Sobre 0.78 m no hay cambios.
+| Distancia real        | Nivel                                                         |
+|-----------------------|---------------------------------------------------------------|
+| ≤ 5.95 m              | Columna: nivel = 7.89 − distancia                             |
+| 5.95 – 6.73 m         | Embudo intermedio: nivel = 7.89 − distancia (se muestra `≈`)  |
+| 6.73 m – lectura vacío | Embudos finales, aproximado hasta el nivel de silo vacío (`≈`) |
+| radar ≥ 7.05 m        | Silo vacío: masa residual `NITRATO_MASA_VACIO_TON` (0.10 t)   |
+
+El radar no alcanza a ver el fondo de los dos embudos finales (con el silo vacío lee ~7.05 m), por eso esa zona es aproximada.
 
 ---
 
