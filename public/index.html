@@ -6,7 +6,7 @@
   <title>SCADA SILOS LB</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-page="matriz">
+<body data-page="totales">
   <div class="header">
     <img src="logo.png" class="logo" alt="Logo">
     <h1>SISTEMA MONITOREO SILOS - P. LOS BRONCES</h1>
@@ -19,10 +19,10 @@
 
   <!-- ===== SELECTOR DE SUBPÁGINAS ===== -->
   <nav class="page-tabs" role="tablist">
+    <button class="page-tab" role="tab" data-page="totales">Totalizadores</button>
     <button class="page-tab" role="tab" data-page="matriz">Silos Matriz</button>
     <button class="page-tab" role="tab" data-page="nitrato">Silos Nitrato</button>
-    <button class="page-tab" role="tab" data-page="totales">Totalizadores</button>
-    <button class="page-tab admin-only" role="tab" data-page="kpi" hidden>KPI</button>
+    <button class="page-tab admin-only" role="tab" data-page="kpi" hidden>Indicadores</button>
   </nav>
 
   <div class="mode-bar">
@@ -49,19 +49,7 @@
     <button id="exportTrendBtnNitrato" class="export-btn export-btn-nitrato admin-only only-nitrato" hidden>Historial 30 días Nitrato</button>
   </div>
 
-  <!-- ===== PÁGINA 1: SILOS MATRIZ ===== -->
-  <section class="page" id="page-matriz" data-page="matriz">
-    <h2 class="page-title">Silos Matriz</h2>
-    <div class="grid" id="gridMatriz"></div>
-  </section>
-
-  <!-- ===== PÁGINA 2: SILOS NITRATO ===== -->
-  <section class="page" id="page-nitrato" data-page="nitrato">
-    <h2 class="page-title page-title-nitrato">Silos Nitrato de Amonio</h2>
-    <div class="grid" id="gridNitrato"></div>
-  </section>
-
-  <!-- ===== PÁGINA 3: GRÁFICOS TOTALIZADORES ===== -->
+  <!-- ===== PÁGINA 1: GRÁFICOS TOTALIZADORES (principal) ===== -->
   <section class="page" id="page-totales" data-page="totales">
     <h2 class="page-title">Totalizadores</h2>
     <div class="totals-panel">
@@ -70,9 +58,21 @@
     </div>
   </section>
 
-  <!-- ===== PÁGINA 4: KPI ===== -->
+  <!-- ===== PÁGINA 2: SILOS MATRIZ ===== -->
+  <section class="page" id="page-matriz" data-page="matriz">
+    <h2 class="page-title">Silos Matriz</h2>
+    <div class="grid" id="gridMatriz"></div>
+  </section>
+
+  <!-- ===== PÁGINA 3: SILOS NITRATO ===== -->
+  <section class="page" id="page-nitrato" data-page="nitrato">
+    <h2 class="page-title page-title-nitrato">Silos Nitrato de Amonio</h2>
+    <div class="grid" id="gridNitrato"></div>
+  </section>
+
+  <!-- ===== PÁGINA 4: INDICADORES (KPI, solo Admin) ===== -->
   <section class="page" id="page-kpi" data-page="kpi">
-    <h2 class="page-title">KPI · últimos 30 días</h2>
+    <h2 class="page-title">Indicadores · últimos 30 días</h2>
     <div class="kpi-note">
       <span id="kpiThreshold">Filtro de ruido del radar: mediana de 35 min y umbral adaptativo por silo.</span>
       <span id="kpiUpdated"></span>

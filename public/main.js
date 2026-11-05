@@ -6,19 +6,20 @@ const socket = io();
 
 // ===== SUBPÁGINAS =====
 
-const PAGES = ["matriz", "nitrato", "totales", "kpi"];
+const PAGES = ["totales", "matriz", "nitrato", "kpi"];
+const DEFAULT_PAGE = "totales";   // pestaña principal al abrir el SCADA
 const ADMIN_PAGES = ["kpi"];          // subpáginas visibles solo para el usuario Admin
 let isAdminUser = false;
 
 function getPageFromHash() {
   const page = (window.location.hash || "").replace("#", "");
-  return PAGES.indexOf(page) >= 0 ? page : "matriz";
+  return PAGES.indexOf(page) >= 0 ? page : DEFAULT_PAGE;
 }
 
 function showPage(page) {
   if (ADMIN_PAGES.indexOf(page) >= 0 && !isAdminUser) {
-    page = "matriz";
-    history.replaceState(null, "", "#matriz");
+    page = DEFAULT_PAGE;
+    history.replaceState(null, "", "#" + DEFAULT_PAGE);
   }
   document.body.dataset.page = page;
 
@@ -53,7 +54,7 @@ window.addEventListener("hashchange", function () {
 // Estado inicial (antes de que matriz.js / nitrato.js dibujen)
 (function initPage() {
   let page = getPageFromHash();
-  if (ADMIN_PAGES.indexOf(page) >= 0) page = "matriz";   // se habilita al confirmar que es Admin
+  if (ADMIN_PAGES.indexOf(page) >= 0) page = DEFAULT_PAGE;   // se habilita al confirmar que es Admin
   document.body.dataset.page = page;
   document.querySelectorAll(".page").forEach(function (section) {
     section.hidden = section.dataset.page !== page;
@@ -199,7 +200,7 @@ fetch("/whoami")
     const requested = getPageFromHash();
     if (ADMIN_PAGES.indexOf(requested) >= 0) {
       if (isAdminUser) showPage(requested);
-      else if (window.location.hash) window.location.hash = "matriz";
+      else if (window.location.hash) window.location.hash = DEFAULT_PAGE;
     }
   })
   .catch(function () {});
