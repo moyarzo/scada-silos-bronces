@@ -6,7 +6,7 @@ const socket = io();
 
 // ===== SUBPÁGINAS =====
 
-const PAGES = ["matriz", "nitrato", "totales"];
+const PAGES = ["matriz", "nitrato", "totales", "kpi"];
 
 function getPageFromHash() {
   const page = (window.location.hash || "").replace("#", "");

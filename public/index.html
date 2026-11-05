@@ -22,6 +22,7 @@
     <button class="page-tab" role="tab" data-page="matriz">Silos Matriz</button>
     <button class="page-tab" role="tab" data-page="nitrato">Silos Nitrato</button>
     <button class="page-tab" role="tab" data-page="totales">Totalizadores</button>
+    <button class="page-tab" role="tab" data-page="kpi">KPI</button>
   </nav>
 
   <div class="mode-bar">
@@ -69,6 +70,23 @@
     </div>
   </section>
 
+  <!-- ===== PÁGINA 4: KPI ===== -->
+  <section class="page" id="page-kpi" data-page="kpi">
+    <h2 class="page-title">KPI · últimos 30 días</h2>
+    <div class="kpi-note">
+      <span id="kpiThreshold">Filtro de ruido del radar: mediana de 35 min y umbral adaptativo por silo.</span>
+      <span id="kpiUpdated"></span>
+    </div>
+    <div id="kpiContent">
+      <div class="kpi-tiles" id="kpiTiles"></div>
+      <div class="kpi-charts" id="kpiCharts"></div>
+      <div class="kpi-silos">
+        <div class="panel-card" id="kpiSiloMatriz"></div>
+        <div class="panel-card" id="kpiSiloNitrato"></div>
+      </div>
+    </div>
+  </section>
+
   <footer class="footer">
     &#169; 2026 Engineered and developed by MOH (marco.oyarzo@enaex.com) | All rights reserved
   </footer>
@@ -79,5 +97,6 @@
   <script src="main.js"></script>
   <script src="matriz.js"></script>
   <script src="nitrato.js"></script>
+  <script src="kpi.js"></script>
 </body>
 </html>

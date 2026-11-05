@@ -20,8 +20,11 @@ La página tiene 3 pestañas seleccionables por el usuario (la pestaña activa q
 | **Silos Matriz**   | 8 tarjetas de silos Matriz (nivel, volumen, masa, %, gauge, mini-gráfico de % llenado, selector de producto en modo demo) |
 | **Silos Nitrato**  | 8 tarjetas de silos Nitrato (mismos datos; `≈` cuando el nivel está en zona de tolva y es aproximado) |
 | **Totalizadores**  | Gráficos de tendencia diaria 07:00–19:00 de DL-5, ASE (y VE-03 si hay un silo con ese producto) y Nitrato. Bajo cada gráfico: tabla de registro de turno (inicio 07h, cierre 19h, variación) y gauge de % de capacidad de planta |
+| **KPI**            | Últimos 30 días (desde el historial): por producto, consumo de hoy, promedio diario, consumo y recepciones de 30 días con n.º de recargas; gráfico diario de consumo y recepción; tabla de consumo diario por silo con totales y ruido medido del radar |
 
 La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo visible para Admin**, los demás usuarios siempre ven modo REAL), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
+
+**Cálculo de KPI (`lib/kpi.js`).** Se calcula por silo desde el % guardado cada 5 min, convertido a toneladas con el modelo de cada sistema. Bajas = consumo, subidas = recepción. Filtro de ruido del radar: mediana móvil de 35 min + umbral adaptativo por silo y día (3σ del ruido medido, mínimo `KPI_UMBRAL_TON` = 0.3 t). Validado por simulación: error < 1.5 % con ruido de hasta ±6 cm y picos. Una recarga es un tramo de subidas ≥ `KPI_RECARGA_MIN_TON` (1 t). Un % exactamente 0 se considera "sin dato". El producto de cada silo de Matriz es el de la configuración actual.
 
 **Capacidad de planta (gauge en Totalizadores):** DL-5 420 t, ASE 37 t, Nitrato 480 t. Se cambian en `PRODUCT_CAPACITY` de `public/matriz.js` y `public/nitrato.js` (VE-03 sin capacidad definida).
 
