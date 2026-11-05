@@ -68,6 +68,17 @@ Densidad 750 kg/m³ (como la planilla; ajustable con `NITRATO_DENSIDAD`). % de l
 
 El radar no alcanza a ver el fondo de los dos embudos finales (con el silo vacío lee ~7.05 m), por eso esa zona es aproximada.
 
+**Recalcular historial al cambiar el modelo.** El historial guarda valores ya calculados (t y %). Si cambia el modelo de cálculo, los puntos anteriores quedan con el modelo viejo y el gráfico muestra un salto. `tools/recalcular-historial-nitrato.js` reconstruye la lectura del radar desde el % guardado y recalcula cada punto con el modelo actual (por silo, totalizador y turno), con respaldo automático en `backups/`:
+
+```sh
+pm2 stop scada-silos
+node tools/recalcular-historial-nitrato.js              # simulación: muestra los cambios
+node tools/recalcular-historial-nitrato.js --aplicar    # aplica (--dias N o --todo para días anteriores)
+pm2 start scada-silos
+```
+
+Los días ya convertidos quedan registrados en `nitrato_recalculo.json` y no se convierten dos veces.
+
 ---
 
 ## MQTT — Topics
