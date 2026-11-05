@@ -46,15 +46,17 @@ La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo v
 
 **Matriz** — `nivel = 5.92 − distancia_radar × 0.98`, volumen cono + cilindro (46.168 m³).
 
-**Nitrato** — tabla empírica radar → nivel (`RADAR_TABLE` en `lib/nitrato.js`), registrada en terreno con LiDAR en junio 2026. El LiDAR solo se usó para levantar la tabla; en operación se usa únicamente el radar.
+**Nitrato** — calibración radar → distancia real (`RADAR_CALIBRATION` en `lib/nitrato.js`). Puntos de terreno: LiDAR (junio 2026) + mediciones manuales verticales (noviembre 2026). Al arrancar se ajusta una recta `distancia = A·radar + B` por mínimos cuadrados (hoy: `1.039·radar + 0.018`, error < 9 cm). En operación se usa solo el radar.
 
 | Lectura radar   | Cálculo de nivel                                                   |
 |-----------------|--------------------------------------------------------------------|
-| 0.34 – 4.05 m   | Interpolación lineal sobre la tabla (zona recta)                   |
-| 4.05 – 7.05 m   | Aproximado: interpolación hasta el punto de silo vacío (tolva). Se muestra con `≈` |
-| ≥ 7.05 m        | Silo vacío (0.70 m³ residuales)                                    |
+| ≤ 5.71 m        | Zona recta: nivel = 6.73 − (A·radar + B)                           |
+| 5.71 – 7.05 m   | Tolva, aproximado: interpolación hasta el punto de silo vacío. Se muestra con `≈` |
+| ≥ 7.05 m        | Silo vacío                                                         |
 
-Volumen con tolva de pirámide truncada (2.78 → 3.48 m, 0.78 m) + prisma 3.48 × 3.48 × 5.95 m = 79.73 m³; densidad 750 kg/m³; % de llenado volumétrico.
+Para recalibrar: agregar filas `{ radar, real }` a `RADAR_CALIBRATION` y reiniciar. El log de arranque muestra la recta resultante.
+
+Volumen con tolva de pirámide truncada (2.78 → 3.48 m, 0.78 m) + prisma 3.48 × 3.48 × 5.95 m = 79.73 m³; % de llenado volumétrico. **Densidad efectiva 805 kg/m³** (calibrada con la recarga de 38 t y la extracción de 4 t de nov-2026); se ajusta con `NITRATO_DENSIDAD` en el `.env`.
 
 **Ajuste empírico de la tolva (silo vacío).** Bajo 0.78 m (zona de tolva) el volumen geométrico se multiplica por un factor que baja linealmente desde 1 (borde de la tolva) hasta el valor que hace que el silo vacío (≈0.09 m) muestre la masa residual real: **0.10 t** por defecto. Se ajusta sin tocar código con `NITRATO_MASA_VACIO_TON` en el `.env` y `pm2 restart scada-silos`. Sobre 0.78 m no hay cambios.
 

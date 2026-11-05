@@ -522,6 +522,8 @@ socket.on("nivel", data => {
 socket.on("siloState", backendState => {
   Object.keys(backendState || {}).forEach(tanque => {
     if (!realTanks[tanque]) return;
+    // Densidad efectiva calibrada en el servidor (NITRATO_DENSIDAD)
+    if (backendState[tanque].density) PRODUCTS["Nitrato"].density = backendState[tanque].density;
     realTanks[tanque] = {
       levelMeters: backendState[tanque].levelMeters || 0,
       volume:      backendState[tanque].volume      || 0,
