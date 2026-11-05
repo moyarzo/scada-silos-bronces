@@ -26,7 +26,7 @@ const PRODUCTS = {
 const PRODUCT_CAPACITY = {
   "DL-5": 420,
   "VE-03": null,   // sin definir
-  "ASE": 30
+  "ASE": 37
 };
 
 let mode = "real";

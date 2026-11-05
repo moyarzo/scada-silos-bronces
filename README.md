@@ -23,7 +23,7 @@ La página tiene 3 pestañas seleccionables por el usuario (la pestaña activa q
 
 La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo visible para Admin**, los demás usuarios siempre ven modo REAL), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
 
-**Capacidad de planta (gauge en Totalizadores):** DL-5 420 t, ASE 30 t, Nitrato 480 t. Se cambian en `PRODUCT_CAPACITY` de `public/matriz.js` y `public/nitrato.js` (VE-03 sin capacidad definida).
+**Capacidad de planta (gauge en Totalizadores):** DL-5 420 t, ASE 37 t, Nitrato 480 t. Se cambian en `PRODUCT_CAPACITY` de `public/matriz.js` y `public/nitrato.js` (VE-03 sin capacidad definida).
 
 **Descargas (Excel diario / historial 30 días): solo usuario `Admin`.** Los demás usuarios no ven los botones y el servidor responde 403 si intentan acceder a las rutas de descarga. Para Admin, los botones se muestran según la pestaña: Matriz, Nitrato o los 4 en Totalizadores. Los administradores se definen con `ADMIN_USERS` en el `.env` (por defecto `Admin`, sin distinguir mayúsculas).
 
