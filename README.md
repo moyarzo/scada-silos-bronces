@@ -19,9 +19,11 @@ La página tiene 3 pestañas seleccionables por el usuario (la pestaña activa q
 |--------------------|---------------------------------------------------------------------------|
 | **Silos Matriz**   | 8 tarjetas de silos Matriz (nivel, volumen, masa, %, gauge, mini-gráfico de % llenado, selector de producto en modo demo) |
 | **Silos Nitrato**  | 8 tarjetas de silos Nitrato (mismos datos; `≈` cuando el nivel está en zona de tolva y es aproximado) |
-| **Totalizadores**  | Gráficos de tendencia diaria 07:00–19:00 de DL-5, ASE (y VE-03 si hay un silo con ese producto) y Nitrato, con su cuadro de totalizador y registro de turno 07h / 19h |
+| **Totalizadores**  | Gráficos de tendencia diaria 07:00–19:00 de DL-5, ASE (y VE-03 si hay un silo con ese producto) y Nitrato. Bajo cada gráfico: tabla de registro de turno (inicio 07h, cierre 19h, variación) y gauge de % de capacidad de planta |
 
 La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo visible para Admin**, los demás usuarios siempre ven modo REAL), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
+
+**Capacidad de planta (gauge en Totalizadores):** DL-5 420 t, ASE 30 t, Nitrato 480 t. Se cambian en `PRODUCT_CAPACITY` de `public/matriz.js` y `public/nitrato.js` (VE-03 sin capacidad definida).
 
 **Descargas (Excel diario / historial 30 días): solo usuario `Admin`.** Los demás usuarios no ven los botones y el servidor responde 403 si intentan acceder a las rutas de descarga. Para Admin, los botones se muestran según la pestaña: Matriz, Nitrato o los 4 en Totalizadores. Los administradores se definen con `ADMIN_USERS` en el `.env` (por defecto `Admin`, sin distinguir mayúsculas).
 

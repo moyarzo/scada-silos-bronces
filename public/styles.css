@@ -494,6 +494,101 @@ body[data-page="nitrato"] .only-matriz {
   height: 340px !important;
 }
 
+/* ===== Totalizadores: tabla de turno + gauge de capacidad ===== */
+
+.shift-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 14px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.shift-table-wrap {
+  min-width: 0;
+}
+
+.shift-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 15px;
+}
+
+.shift-table th {
+  text-align: left;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  color: #0f172a;
+  border-bottom: 3px solid #cbd5e1;
+  font-size: 15px;
+}
+
+.shift-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #334155;
+}
+
+.shift-table td:last-child {
+  text-align: right;
+  font-weight: bold;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.shift-table tr:last-child td {
+  border-bottom: none;
+}
+
+.shift-table .shift-var td {
+  background: #f8fafc;
+}
+
+.shift-table .var-pos { color: #16a34a; }
+.shift-table .var-neg { color: #dc2626; }
+
+.shift-table .shift-empty {
+  text-align: center !important;
+  color: #64748b !important;
+  font-weight: normal !important;
+}
+
+.cap-gauge {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.cap-gauge-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #475569;
+}
+
+.cap-gauge-svg {
+  width: 150px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 2px auto 0 auto;
+}
+
+.cap-gauge-value {
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.cap-gauge-detail {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
 /* Pantallas medianas: la barra de sesión pasa bajo el título para no taparlo */
 @media (max-width: 1750px) and (min-width: 769px) {
   .header {
@@ -600,6 +695,10 @@ body[data-page="nitrato"] .only-matriz {
 
   .totals-panel .chart-wrapper canvas {
     height: 240px !important;
+  }
+
+  .shift-row {
+    grid-template-columns: 1fr;
   }
 
   .tank-main {

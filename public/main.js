@@ -94,6 +94,86 @@ window.scadaMqttStatus = (function () {
   };
 })();
 
+// ===== TOTALIZADORES: TABLA DE TURNO + GAUGE DE CAPACIDAD (común a Matriz y Nitrato) =====
+// Se dibuja bajo el gráfico de cada producto en la pestaña "Totalizadores".
+
+window.scadaTotals = (function () {
+  function fmt(v) {
+    return v != null && !isNaN(v) ? Number(v).toFixed(1) + " t" : "—";
+  }
+
+  function capacityGauge(percent, color) {
+    const radius = 62;
+    const circumference = Math.PI * radius;
+    const shown = Math.max(0, Math.min(100, percent));
+    const progress = (shown / 100) * circumference;
+    return `
+      <svg viewBox="0 0 160 96" class="cap-gauge-svg" aria-hidden="true">
+        <path d="M18 84 A62 62 0 0 1 142 84" stroke="#e5e7eb" stroke-width="14" fill="none"></path>
+        <path d="M18 84 A62 62 0 0 1 142 84" stroke="${color}" stroke-width="14" fill="none"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${circumference - progress}"
+          style="transition: stroke-dashoffset 0.6s ease;"></path>
+        <text x="14" y="96" font-size="11" fill="#64748b">0%</text>
+        <text x="146" y="96" font-size="11" fill="#64748b" text-anchor="end">100%</text>
+      </svg>`;
+  }
+
+  /**
+   * opts: { product, color, start, end, total, capacity, isDemo, isToday }
+   */
+  function renderShiftAndCapacity(el, opts) {
+    if (!el) return;
+
+    let rows;
+    if (opts.isDemo) {
+      rows = `<tr><td colspan="2" class="shift-empty">Modo demo: sin registro de turno</td></tr>`;
+    } else {
+      let variation = null, variationLabel = "Variación turno";
+      if (opts.start != null && opts.end != null) {
+        variation = opts.end - opts.start;
+      } else if (opts.start != null && opts.isToday) {
+        variation = opts.total - opts.start;
+        variationLabel = "Variación (en curso)";
+      }
+      const varClass = variation == null ? "" : (variation > 0 ? "var-pos" : variation < 0 ? "var-neg" : "");
+      const varText = variation == null ? "—" : (variation > 0 ? "+" : "") + variation.toFixed(1) + " t";
+      rows = `
+        <tr><td>Inicio turno (07:00)</td><td>${fmt(opts.start)}</td></tr>
+        <tr><td>Cierre turno (19:00)</td><td>${fmt(opts.end)}</td></tr>
+        <tr class="shift-var"><td>${variationLabel}</td><td class="${varClass}">${varText}</td></tr>`;
+    }
+
+    let gauge;
+    if (opts.capacity) {
+      const percent = (opts.total / opts.capacity) * 100;
+      gauge = `
+        <div class="cap-gauge">
+          <div class="cap-gauge-title">Capacidad planta</div>
+          ${capacityGauge(percent, opts.color)}
+          <div class="cap-gauge-value" style="color:${opts.color}">${percent.toFixed(1)}%</div>
+          <div class="cap-gauge-detail">${opts.total.toFixed(1)} / ${opts.capacity} t</div>
+        </div>`;
+    } else {
+      gauge = `
+        <div class="cap-gauge">
+          <div class="cap-gauge-title">Capacidad planta</div>
+          <div class="cap-gauge-detail">Sin capacidad definida</div>
+        </div>`;
+    }
+
+    el.innerHTML = `
+      <div class="shift-table-wrap">
+        <table class="shift-table">
+          <thead><tr><th colspan="2" style="border-color:${opts.color}">Registro de turno</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${gauge}`;
+  }
+
+  return { renderShiftAndCapacity: renderShiftAndCapacity };
+})();
+
 // ===== SESIÓN =====
 
 // Quién soy (usa la cookie de sesión ya activa).

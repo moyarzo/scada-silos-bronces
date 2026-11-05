@@ -22,6 +22,13 @@ const PRODUCTS = {
   "ASE": { density: 800, color: "#ea580c" }
 };
 
+// Capacidad máxima de planta por producto (t) → gauge de la pestaña Totalizadores
+const PRODUCT_CAPACITY = {
+  "DL-5": 420,
+  "VE-03": null,   // sin definir
+  "ASE": 30
+};
+
 let mode = "real";
 let turnData = {};           // Turno del día actual (en vivo)
 let historyTurnData = {};    // Turno de la fecha seleccionada (histórico)
@@ -230,6 +237,7 @@ function renderTopPanel() {
         <div class="chart-wrapper">
           <canvas id="chart-${safeId}"></canvas>
         </div>
+        <div id="shift-${safeId}" class="shift-row"></div>
       </div>
     `;
   }).join("");
@@ -591,10 +599,7 @@ function renderSummary() {
       el.innerHTML = `
         <div style="background:${PRODUCTS[product].color}; padding:8px; border-radius:8px;">
           <strong>${product}</strong> &mdash; <span style="font-size:0.85em; opacity:0.9">${dateLabel}</span><br>
-          <strong>Totalizador:</strong> ${totals[product].toFixed(1)} ton<br>
-          <strong>Registro turno:</strong>
-          07h: ${start[product] != null ? Number(start[product]).toFixed(1) : "-"} ton |
-          19h: ${end[product] != null ? Number(end[product]).toFixed(1) : "-"} ton
+          <strong>Totalizador:</strong> ${totals[product].toFixed(1)} ton
         </div>
       `;
     } else {
@@ -606,6 +611,18 @@ function renderSummary() {
         </div>
       `;
     }
+
+    // Registro de turno (tabla) + capacidad de planta (gauge) bajo el gráfico
+    window.scadaTotals.renderShiftAndCapacity(document.getElementById(`shift-${safeId}`), {
+      product: product,
+      color: PRODUCTS[product].color,
+      start: start[product] != null ? Number(start[product]) : null,
+      end: end[product] != null ? Number(end[product]) : null,
+      total: totals[product] || 0,
+      capacity: PRODUCT_CAPACITY[product],
+      isDemo: mode !== "real",
+      isToday: isToday
+    });
   });
 }
 
@@ -953,6 +970,7 @@ window.addEventListener("resize", function () {
   renderTopPanel();
   initCharts();
   updateCharts();
+  renderSummary();   // vuelve a llenar encabezado, tabla de turno y gauge
   destroyMiniCharts();
   updateMiniSiloCharts();
 });
