@@ -20,7 +20,7 @@ La página tiene 3 pestañas seleccionables por el usuario (la pestaña activa q
 | **Silos Matriz**   | 8 tarjetas de silos Matriz (nivel, volumen, masa, %, gauge, mini-gráfico de % llenado, selector de producto en modo demo) |
 | **Silos Nitrato**  | 8 tarjetas de silos Nitrato (mismos datos; `≈` cuando el nivel está en zona de tolva y es aproximado) |
 | **Totalizadores**  | Gráficos de tendencia diaria 07:00–19:00 de DL-5, ASE (y VE-03 si hay un silo con ese producto) y Nitrato. Bajo cada gráfico: tabla de registro de turno (inicio 07h, cierre 19h, variación) y gauge de % de capacidad de planta |
-| **KPI**            | Últimos 30 días (desde el historial): por producto, consumo de hoy, promedio diario, consumo y recepciones de 30 días con n.º de recargas; gráfico diario de consumo y recepción; tabla de consumo diario por silo con totales y ruido medido del radar |
+| **KPI** (solo Admin) | Últimos 30 días (desde el historial): por producto, consumo de hoy, promedio diario, consumo y recepciones de 30 días con n.º de recargas; gráfico diario de consumo y recepción; tabla de consumo diario por silo con totales y ruido medido del radar |
 
 La barra superior es común: modo DEMO / REAL (aplica a ambos sistemas; **solo visible para Admin**, los demás usuarios siempre ven modo REAL), un único estado de señal MQTT (Matriz y Nitrato comparten HMI/broker; se marca activo con el último dato recibido de cualquiera de los dos) y selector de día de los gráficos.
 

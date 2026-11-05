@@ -7,6 +7,8 @@ const socket = io();
 // ===== SUBPÁGINAS =====
 
 const PAGES = ["matriz", "nitrato", "totales", "kpi"];
+const ADMIN_PAGES = ["kpi"];          // subpáginas visibles solo para el usuario Admin
+let isAdminUser = false;
 
 function getPageFromHash() {
   const page = (window.location.hash || "").replace("#", "");
@@ -14,6 +16,10 @@ function getPageFromHash() {
 }
 
 function showPage(page) {
+  if (ADMIN_PAGES.indexOf(page) >= 0 && !isAdminUser) {
+    page = "matriz";
+    history.replaceState(null, "", "#matriz");
+  }
   document.body.dataset.page = page;
 
   document.querySelectorAll(".page").forEach(function (section) {
@@ -46,7 +52,8 @@ window.addEventListener("hashchange", function () {
 
 // Estado inicial (antes de que matriz.js / nitrato.js dibujen)
 (function initPage() {
-  const page = getPageFromHash();
+  let page = getPageFromHash();
+  if (ADMIN_PAGES.indexOf(page) >= 0) page = "matriz";   // se habilita al confirmar que es Admin
   document.body.dataset.page = page;
   document.querySelectorAll(".page").forEach(function (section) {
     section.hidden = section.dataset.page !== page;
@@ -183,9 +190,17 @@ fetch("/whoami")
   .then(function (data) {
     document.getElementById("currentUser").innerText = "Usuario: " + data.user;
 
+    isAdminUser = !!data.isAdmin;
     document.querySelectorAll(".admin-only").forEach(function (el) {
       el.hidden = !data.isAdmin;
     });
+
+    // Si se abrió directamente una subpágina de Admin (ej. /#kpi), mostrarla ahora
+    const requested = getPageFromHash();
+    if (ADMIN_PAGES.indexOf(requested) >= 0) {
+      if (isAdminUser) showPage(requested);
+      else if (window.location.hash) window.location.hash = "matriz";
+    }
   })
   .catch(function () {});
 
