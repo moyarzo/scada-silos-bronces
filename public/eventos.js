@@ -32,15 +32,6 @@ function dayTitle(k) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-function ago(ts) {
-  if (!ts) return "";
-  const s = Math.max(0, Math.round((Date.now() - new Date(ts.replace(" ", "T")).getTime()) / 1000));
-  if (s < 60) return "hace " + s + " s";
-  if (s < 3600) return "hace " + Math.round(s / 60) + " min";
-  if (s < 86400) return "hace " + Math.floor(s / 3600) + " h " + Math.round((s % 3600) / 60) + " min";
-  return "desde " + ts.slice(0, 16);
-}
-
 // ===== FILTROS =====
 
 function filters() {
@@ -82,40 +73,27 @@ function renderTiles(r) {
 
   // Comunicaciones ahora
   if (r.hmiSinDatos) {
-    tiles.push({ cls: "alarma", label: "Comunicaciones ahora", value: "HMI sin datos", small: true, sub: "Último dato " + ago(r.ultimoDato) });
+    tiles.push({ cls: "alarma", label: "Comunicaciones ahora", value: "HMI sin datos", small: true });
   } else if (!r.brokerOk) {
-    tiles.push({ cls: "alarma", label: "Comunicaciones ahora", value: "Broker desconectado", small: true,
-      sub: r.brokers.filter(b => !b.connected).map(b => b.url).join(", ") });
+    tiles.push({ cls: "alarma", label: "Comunicaciones ahora", value: "Broker desconectado", small: true });
   } else {
-    tiles.push({ cls: "ok", label: "Comunicaciones ahora", value: "HMI y broker OK", small: true,
-      sub: r.ultimoDato ? "Último dato " + ago(r.ultimoDato) : "Esperando datos" });
+    tiles.push({ cls: "ok", label: "Comunicaciones ahora", value: "HMI y broker OK", small: true });
   }
 
-  // Silos sin datos ahora
-  const sd = r.silosSinDatos || [];
-  tiles.push({ cls: sd.length ? "aviso" : "ok", label: "Silos sin datos ahora", value: r.hmiSinDatos ? "Todos" : sd.length,
-    sub: r.hmiSinDatos ? "Ver HMI" : sd.length
-      ? sd.slice(0, 3).map(s => s.silo).join(", ") + (sd.length > 3 ? " y " + (sd.length - 3) + " más" : "")
-      : "Los " + r.totalSilos + " silos publican" });
+  const sd = (r.silosSinDatos || []).length;
+  tiles.push({ cls: r.hmiSinDatos || sd ? "aviso" : "ok", label: "Silos sin datos ahora", value: r.hmiSinDatos ? "Todos" : sd });
 
-  tiles.push({ cls: r.alarmasHoy ? "alarma" : r.avisosHoy ? "aviso" : "ok", label: "Alarmas hoy", value: num(r.alarmasHoy),
-    sub: num(r.avisosHoy) + " avisos · " + num(r.eventosHoy) + " eventos en total" });
+  tiles.push({ cls: r.alarmasHoy ? "alarma" : "ok", label: "Alarmas hoy", value: num(r.alarmasHoy) });
 
-  tiles.push({ cls: "", label: "Proceso hoy", value: num(r.recargasHoy) + (r.recargasHoy === 1 ? " recarga" : " recargas"),
-    small: true,
-    sub: (r.recargasEnCurso ? num(r.recargasEnCurso) + " en curso · " : "") +
-      num(r.saltosHoy) + (r.saltosHoy === 1 ? " salto descartado" : " saltos descartados") });
+  tiles.push({ cls: "", label: "Proceso hoy", small: true,
+    value: num(r.recargasHoy) + (r.recargasHoy === 1 ? " recarga" : " recargas") });
 
-  if (isAdmin) {
-    tiles.push({ cls: r.fallidosHoy ? "aviso" : "", label: "Accesos hoy", value: num(r.accesosHoy),
-      sub: num(r.fallidosHoy) + (r.fallidosHoy === 1 ? " intento fallido" : " intentos fallidos") });
-  }
+  if (isAdmin) tiles.push({ cls: "", label: "Accesos hoy", value: num(r.accesosHoy) });
 
   $("evTiles").innerHTML = tiles.map(t => `
     <div class="ev-tile ${t.cls}">
       <div class="ev-tile-label">${t.label}</div>
       <div class="ev-tile-value${t.small ? " small" : ""}">${esc(t.value)}</div>
-      <div class="ev-tile-sub">${esc(t.sub)}</div>
     </div>`).join("");
 }
 
