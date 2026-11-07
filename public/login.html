@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ARGOSS · Acceso</title>
 <style>
   body {
@@ -19,6 +20,7 @@
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     width: 280px;
+    max-width: calc(100vw - 104px);
     text-align: center;
   }
   .card h1 {
@@ -38,7 +40,8 @@
     font-size: 14px;
     margin-bottom: 22px;
   }
-  input {
+  input, select {
+    font-size: 16px;
     width: 100%;
     padding: 10px;
     margin-bottom: 12px;
@@ -47,6 +50,29 @@
     background: #0f172a;
     color: #f1f5f9;
     box-sizing: border-box;
+  }
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 32px;
+    background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%), linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+    background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+  .field-label {
+    display: block;
+    text-align: left;
+    color: #94a3b8;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0 0 6px 2px;
   }
   button {
     width: 100%;
@@ -73,7 +99,12 @@
     <h1>ARGOSS</h1>
     <div class="tagline">Automated Radar Gauging &amp; Online Stock System</div>
     <div class="error" id="errorMsg" style="display:none;">Usuario o contraseña incorrectos</div>
-    <form method="POST" action="/login">
+    <form method="POST" action="/login" id="loginForm">
+      <div id="plantaField" style="display:none;">
+        <label class="field-label" for="planta">Planta</label>
+        <select id="planta" name="planta" required></select>
+      </div>
+      <input type="hidden" name="origen" id="origen" value="">
       <input type="text" name="username" placeholder="Usuario" autocomplete="username" required>
       <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required>
       <button type="submit">Ingresar</button>
@@ -81,9 +112,72 @@
   </div>
 
   <script>
-    if (window.location.search.includes("error=1")) {
-      document.getElementById("errorMsg").style.display = "block";
-    }
+    // ===== SELECCIÓN DE PLANTA =====
+    // El mismo login se usa en el portal (argoss.cl) y en cada planta (ej. lossauces.argoss.cl).
+    // plantas.json lista las plantas; el formulario se envía al servidor de la planta elegida.
+    // En el servidor de una planta, esa planta viene marcada "local" y se envía aquí mismo (/login),
+    // así el acceso por IP sigue funcionando sin dominio.
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("error") === "1") {
+        document.getElementById("errorMsg").style.display = "block";
+      }
+
+      var form = document.getElementById("loginForm");
+      var select = document.getElementById("planta");
+      var origen = document.getElementById("origen");
+      var plantas = [];
+
+      function stored() {
+        try { return localStorage.getItem("argoss.planta"); } catch (e) { return null; }
+      }
+      function store(id) {
+        try { localStorage.setItem("argoss.planta", id); } catch (e) {}
+      }
+
+      function applySelection() {
+        var p = plantas.filter(function (x) { return x.id === select.value; })[0];
+        if (!p) return;
+        if (p.local) {
+          form.action = "/login";
+          origen.value = "";
+        } else {
+          form.action = String(p.url).replace(/\/+$/, "") + "/login";
+          origen.value = "portal";
+        }
+      }
+
+      fetch("plantas.json", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          plantas = (data && data.plantas) || [];
+          if (!plantas.length) return;          // sin lista: login local de siempre
+
+          plantas.forEach(function (p) {
+            var opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.nombre || p.id;
+            select.appendChild(opt);
+          });
+
+          // Preselección: ?planta=… (al volver de un error o de "Cerrar sesión"),
+          // luego la última planta usada, luego la planta local
+          var wanted = [params.get("planta"), stored()]
+            .concat(plantas.filter(function (p) { return p.local; }).map(function (p) { return p.id; }));
+          for (var i = 0; i < wanted.length; i++) {
+            if (wanted[i] && plantas.some(function (p) { return p.id === wanted[i]; })) {
+              select.value = wanted[i];
+              break;
+            }
+          }
+
+          applySelection();
+          document.getElementById("plantaField").style.display = "block";
+          select.addEventListener("change", applySelection);
+          form.addEventListener("submit", function () { store(select.value); });
+        })
+        .catch(function () { /* sin lista: login local de siempre */ });
+    })();
   </script>
 </body>
 </html>

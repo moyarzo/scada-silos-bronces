@@ -35,6 +35,29 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 const BEHIND_HTTPS_PROXY = String(process.env.HTTPS_PROXY_MODE || "").toLowerCase() === "true";
 
+// ===== MULTIPLANTA (portal argoss.cl) =====
+// plantas.json   → lista de plantas que muestra el selector del login (mismo archivo en el portal y en cada planta)
+// PLANTA_ID      → planta que atiende ESTE servidor (por defecto "lossauces")
+// PORTAL_URL     → portal de selección de planta (ej. https://argoss.cl). Si se define, un login fallido
+//                  desde el portal y el "Cerrar sesión" vuelven al portal. Sin definir, todo queda local.
+const PLANTA_ID = (process.env.PLANTA_ID || "lossauces").trim();
+const PORTAL_URL = (process.env.PORTAL_URL || "").trim().replace(/\/+$/, "");
+const PLANTAS_FILE = path.join(__dirname, "plantas.json");
+
+function readPlantas() {
+  try {
+    var data = JSON.parse(require("fs").readFileSync(PLANTAS_FILE, "utf8"));
+    return Array.isArray(data.plantas) ? data.plantas : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function loginPage(query) {
+  // Con portal configurado, el login vuelve al portal; si no, al login local
+  return (PORTAL_URL ? PORTAL_URL + "/" : "/login.html") + (query || "");
+}
+
 // ===== USUARIOS (login) =====
 // Los usuarios y sus hashes bcrypt se definen en el archivo .env
 // (ver generate-hash.js para crear los hashes de las contraseñas)
@@ -124,9 +147,24 @@ app.get("/login.html", function (req, res) {
   res.sendFile(path.join(PUBLIC_DIR, "login.html"));
 });
 
+// Lista de plantas para el selector del login. La planta de este servidor se marca "local"
+// para que su login se envíe aquí mismo (funciona también por IP, sin dominio).
+app.get("/plantas.json", function (req, res) {
+  var plantas = readPlantas().map(function (p) {
+    return Object.assign({}, p, { local: p.id === PLANTA_ID });
+  });
+  if (!plantas.some(function (p) { return p.local; })) {
+    plantas.unshift({ id: PLANTA_ID, nombre: PLANTA_ID, url: "", local: true });
+  }
+  res.json({ plantas: plantas });
+});
+
 app.post("/login", async function (req, res) {
   var username = req.body.username;
   var password = req.body.password;
+  // El login se envió desde el portal (argoss.cl): un error vuelve al portal con la planta elegida
+  var fromPortal = req.body.origen === "portal" && PORTAL_URL;
+  var errorUrl = fromPortal ? PORTAL_URL + "/?error=1&planta=" + encodeURIComponent(PLANTA_ID) : "/login.html?error=1";
 
   try {
     var ok = await validateLogin(username, password);
@@ -134,16 +172,16 @@ app.post("/login", async function (req, res) {
       req.session.user = username;
       return res.redirect("/");
     }
-    return res.redirect("/login.html?error=1");
+    return res.redirect(errorUrl);
   } catch (error) {
     console.error("Error validando login:", error);
-    return res.redirect("/login.html?error=1");
+    return res.redirect(errorUrl);
   }
 });
 
 app.get("/logout", function (req, res) {
   req.session.destroy(function () {
-    res.redirect("/login.html");
+    res.redirect(loginPage("?planta=" + encodeURIComponent(PLANTA_ID)));
   });
 });
 

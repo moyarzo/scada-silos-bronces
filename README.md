@@ -169,41 +169,46 @@ pm2 startup
 
 On startup the log lists the loaded users and the nitrate calibration. If the `.env` file is missing or a hash is malformed, a warning is printed.
 
-### Publishing with a domain and HTTPS
+### Publishing on argoss.cl (multi-plant)
 
-1. Point a DNS **A record** for your domain (e.g. `argos.example.com`) to the VM's static IP.
+One domain serves every plant. Each plant runs its own independent ARGOSS server (own users, history and MQTT broker) on its own subdomain, and `argoss.cl` is the shared entry point: the same login page with an extra **Plant** selector.
+
+```
+argoss.cl              →  login with plant selector (static portal)
+lossauces.argoss.cl    →  ARGOSS Planta Los Sauces (this server)
+<plant>.argoss.cl      →  future plants (their own server)
+```
+
+The user picks the plant, enters their credentials, and the form is sent to that plant's server (`https://<plant>.argoss.cl/login`). A failed login or **Cerrar sesión** returns to `argoss.cl` with the plant preselected. The browser also remembers the last plant used. The plant list lives in [`plantas.json`](plantas.json); the plant served by this machine is set with `PLANTA_ID` and its login is always sent locally, so access by IP keeps working without a domain.
+
+1. Register `argoss.cl` and create DNS **A records** pointing to the VM's static IP: `@`, `www` and `lossauces`.
 2. Open ports **80** and **443** in the cloud firewall.
 3. Install Nginx and Certbot: `sudo apt install nginx certbot python3-certbot-nginx`
-4. Create `/etc/nginx/sites-available/argos` (WebSocket headers are required by Socket.IO):
-
-   ```nginx
-   server {
-       listen 80;
-       server_name argos.example.com;
-
-       location / {
-           proxy_pass http://127.0.0.1:3000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_set_header X-Forwarded-Proto $scheme;
-           proxy_read_timeout 86400;
-       }
-   }
-   ```
-
-5. Enable it and get the certificate (Certbot adds HTTPS, the HTTP → HTTPS redirect and automatic renewal):
+4. Publish the portal (copies `public/login.html` and `plantas.json` to `/var/www/argoss`). Run it again whenever the login or the plant list changes:
 
    ```sh
-   sudo ln -s /etc/nginx/sites-available/argos /etc/nginx/sites-enabled/
-   sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d argos.example.com
+   bash deploy/publicar-portal.sh
    ```
 
-6. Add `HOST=127.0.0.1` and `HTTPS_PROXY_MODE=true` to `.env`, run `pm2 restart scada-silos`, and close port 3000 in the firewall.
+5. Install the Nginx site from [`deploy/nginx-argoss.conf`](deploy/nginx-argoss.conf) (portal + `lossauces.argoss.cl` with the WebSocket headers Socket.IO needs) and get the certificates. Certbot adds HTTPS, the HTTP → HTTPS redirect and automatic renewal:
+
+   ```sh
+   sudo cp deploy/nginx-argoss.conf /etc/nginx/sites-available/argoss
+   sudo ln -s /etc/nginx/sites-available/argoss /etc/nginx/sites-enabled/
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo certbot --nginx -d argoss.cl -d www.argoss.cl -d lossauces.argoss.cl
+   ```
+
+6. Add to `.env`, then run `pm2 restart scada-silos` and close port 3000 in the firewall:
+
+   ```sh
+   HOST=127.0.0.1
+   HTTPS_PROXY_MODE=true
+   PLANTA_ID=lossauces
+   PORTAL_URL=https://argoss.cl
+   ```
+
+**Adding a plant:** deploy ARGOSS on the new plant's server with its own `PLANTA_ID`, add a DNS A record for `<plant>.argoss.cl`, set up Nginx + Certbot there, add the plant to `plantas.json` in the repository (`id`, `nombre`, `url`), and run `bash deploy/publicar-portal.sh` again on the portal VM.
 
 ### Updating without losing history
 
@@ -221,6 +226,8 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | `PORT` | `3000` | HTTP port |
 | `HOST` | `0.0.0.0` | Bind address; use `127.0.0.1` behind Nginx so port 3000 is not exposed |
 | `HTTPS_PROXY_MODE` | `false` | `true` behind an HTTPS reverse proxy: trusts `X-Forwarded-*` and sends the session cookie only over HTTPS |
+| `PLANTA_ID` | `lossauces` | Plant served by this server (an `id` from `plantas.json`); its login is sent locally |
+| `PORTAL_URL` | — | Plant-selection portal (e.g. `https://argoss.cl`). A failed portal login and logout return here |
 | `MQTT_URL` | `mqtt://localhost:1883` | Broker for both systems |
 | `MQTT_URL_MATRIZ` / `MQTT_URL_NITRATO` | `MQTT_URL` | Per-system broker override |
 | `MQTT_TOPIC_MATRIZ` | `planta/losbronces/silos/#` | Matriz subscription |
@@ -260,9 +267,12 @@ scada-silos-bronces/
 │   └── kpi.js                ← Consumption / reception / per-silo indicators
 ├── tools/
 │   └── recalcular-historial-nitrato.js   ← Recalculate nitrate history after a model change
+├── deploy/
+│   ├── nginx-argoss.conf     ← Nginx: argoss.cl portal + lossauces.argoss.cl
+│   └── publicar-portal.sh    ← Publish the login + plant list as the argoss.cl portal
 ├── public/
 │   ├── index.html            ← Dashboard with the four tabs
-│   ├── login.html
+│   ├── login.html            ← Login with plant selector (also served as the argoss.cl portal)
 │   ├── main.js               ← Tabs, session, roles, shared MQTT status, shift table and capacity gauge
 │   ├── matriz.js             ← Matriz frontend
 │   ├── nitrato.js            ← Nitrate frontend
@@ -272,6 +282,7 @@ scada-silos-bronces/
 ├── docs/demo.gif             ← README walkthrough
 ├── template.xlsx             ← Daily Excel template (both systems)
 ├── siloConfig.json           ← Product per Matriz silo
+├── plantas.json              ← Plants shown in the login selector
 ├── generate-hash.js          ← bcrypt hash generator for user passwords
 ├── ecosystem.config.js       ← PM2
 ├── env.example
