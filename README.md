@@ -104,8 +104,10 @@ The switch-over time is read from the PM2 log. If it is not found, pass it with 
 Indicators are computed per silo from the fill % stored every 5 minutes, converted to tonnes with each system's model. Decreases count as consumption and increases as reception.
 
 - **Radar-noise filter:** 35-minute moving median, then hysteresis with an adaptive threshold per silo and per day (3σ of the measured noise, minimum `KPI_UMBRAL_TON` = 0.3 t). In simulation it keeps the error below 1.5 % with noise up to ±6 cm and spurious spikes.
-- **Refill:** a continuous run of increases totalling at least `KPI_RECARGA_MIN_TON` (1 t).
-- A stored value of exactly 0 % is treated as "no data".
+- **Refill:** a *gradual* rise — the level increases over at least `KPI_RECARGA_MIN_PASOS` (3) consecutive filter steps, i.e. ≥ 15 min rising — totalling at least `KPI_RECARGA_MIN_TON` (1 t). A sudden rise is neither a refill nor a reception.
+- **Jumps (power cuts, sensor/HMI restarts):** if the fill % changes more than `KPI_SALTO_PCT` (10 points) per 5 minutes elapsed between two valid readings, the series is cut there and the jump is not counted as consumption or reception. If the level later returns close to its previous value, the false readings in between are discarded and both sides are joined, so real consumption during the outage is still counted. A real refill already in progress continues to count across a power cut. A refill that happens entirely while the system has no data is not counted (it appears only as a jump).
+- Readings of exactly 0 % or ≥ 99.5 % (a radar restarting reports distance 0; the product never reaches the antenna) are treated as "no data".
+- The **Saltos** column shows how many jumps were discarded per silo in 30 days.
 - Matriz silos use their current product assignment.
 - The **Radar noise** column (1σ, in tonnes) helps detect a sensor that needs attention.
 
@@ -189,6 +191,8 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | `NITRATO_MASA_VACIO_TON` | `0.10` | Residual mass shown for an empty nitrate silo (t) |
 | `KPI_UMBRAL_TON` | `0.3` | Minimum noise threshold for indicators (t) |
 | `KPI_RECARGA_MIN_TON` | `1` | Minimum mass to count a refill (t) |
+| `KPI_RECARGA_MIN_PASOS` | `3` | Minimum consecutive rising steps for a gradual refill |
+| `KPI_SALTO_PCT` | `10` | Maximum credible change in fill % per 5 min; larger changes are jumps |
 
 ---
 

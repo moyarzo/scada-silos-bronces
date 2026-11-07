@@ -172,6 +172,7 @@ function renderSiloTable(elId, src, title) {
 
   const head = `<tr><th class="kpi-sticky">Silo</th>${days.map((d, i) => `<th title="${d}">${dayLabel(d, i === days.length - 1)}</th>`).join("")}
     <th class="kpi-total">Consumo 30 d</th><th class="kpi-total">Recepción 30 d</th><th class="kpi-total">Recargas</th>
+    <th class="kpi-total" title="Saltos bruscos descartados en 30 días (cortes de energía o reinicios del sensor/HMI). No se cuentan como consumo, recepción ni recarga.">Saltos</th>
     <th class="kpi-total" title="Ruido promedio de la lectura del radar (1σ, en toneladas). Un aumento sostenido puede indicar un problema del sensor.">Ruido radar</th></tr>`;
 
   const rows = silos.map(id => {
@@ -191,6 +192,7 @@ function renderSiloTable(elId, src, title) {
       <td class="kpi-total">${fmt(sum(s.consumo), 1)}</td>
       <td class="kpi-total">${fmt(sum(s.recepcion), 1)}</td>
       <td class="kpi-total">${sum(s.recargas)}</td>
+      <td class="kpi-total">${sum(s.saltos || [])}</td>
       <td class="kpi-total">${noiseText(s)}</td></tr>`;
   }).join("");
 
