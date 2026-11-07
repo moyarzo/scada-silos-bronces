@@ -29,6 +29,12 @@ const BASE_DIR = __dirname;                       // archivos de datos (.json, t
 const PUBLIC_DIR = path.join(__dirname, "public"); // frontend
 const PORT = process.env.PORT || 3000;
 
+// ===== PUBLICACIÓN DETRÁS DE NGINX (HTTPS) =====
+// HOST=127.0.0.1      → el puerto 3000 solo es accesible desde la propia VM (Nginx publica 443)
+// HTTPS_PROXY_MODE=true → confía en el proxy (X-Forwarded-*) y marca la cookie de sesión como segura
+const HOST = process.env.HOST || "0.0.0.0";
+const BEHIND_HTTPS_PROXY = String(process.env.HTTPS_PROXY_MODE || "").toLowerCase() === "true";
+
 // ===== USUARIOS (login) =====
 // Los usuarios y sus hashes bcrypt se definen en el archivo .env
 // (ver generate-hash.js para crear los hashes de las contraseñas)
@@ -86,14 +92,17 @@ function requireAdmin(req, res, next) {
   return res.status(403).send("Acceso restringido: solo el usuario administrador puede descargar esta información");
 }
 
+if (BEHIND_HTTPS_PROXY) app.set("trust proxy", 1);   // Nginx entrega HTTPS y reenvía a localhost
+
 var sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "cambia_esta_clave_en_produccion",
   resave: false,
   saveUninitialized: false,
   cookie: {
     maxAge: 8 * 60 * 60 * 1000, // 8 horas
-    httpOnly: true
-    // secure: true  // <- descomentar cuando el sitio corra bajo HTTPS
+    httpOnly: true,
+    secure: BEHIND_HTTPS_PROXY,   // cookie solo por HTTPS cuando se publica detrás de Nginx
+    sameSite: "lax"
   }
 });
 
@@ -182,6 +191,6 @@ setupNitrato({ app: app, io: nitratoNsp, requireAuth: requireAuth, requireAdmin:
 // Todo lo demás (dashboard, JS, CSS del panel) requiere sesión activa.
 app.use("/", requireAuth, express.static(PUBLIC_DIR));
 
-server.listen(PORT, "0.0.0.0", function () {
+server.listen(PORT, HOST, function () {
   console.log("ARGOS — monitoreo de silos (Matriz + Nitrato) corriendo en puerto " + PORT);
 });

@@ -169,6 +169,42 @@ pm2 startup
 
 On startup the log lists the loaded users and the nitrate calibration. If the `.env` file is missing or a hash is malformed, a warning is printed.
 
+### Publishing with a domain and HTTPS
+
+1. Point a DNS **A record** for your domain (e.g. `argos.example.com`) to the VM's static IP.
+2. Open ports **80** and **443** in the cloud firewall.
+3. Install Nginx and Certbot: `sudo apt install nginx certbot python3-certbot-nginx`
+4. Create `/etc/nginx/sites-available/argos` (WebSocket headers are required by Socket.IO):
+
+   ```nginx
+   server {
+       listen 80;
+       server_name argos.example.com;
+
+       location / {
+           proxy_pass http://127.0.0.1:3000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           proxy_read_timeout 86400;
+       }
+   }
+   ```
+
+5. Enable it and get the certificate (Certbot adds HTTPS, the HTTP → HTTPS redirect and automatic renewal):
+
+   ```sh
+   sudo ln -s /etc/nginx/sites-available/argos /etc/nginx/sites-enabled/
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo certbot --nginx -d argos.example.com
+   ```
+
+6. Add `HOST=127.0.0.1` and `HTTPS_PROXY_MODE=true` to `.env`, run `pm2 restart scada-silos`, and close port 3000 in the firewall.
+
 ### Updating without losing history
 
 Data files are not touched by updates, so `git pull` followed by `pm2 restart scada-silos` keeps all history. Do not run `git reset --hard` or `git checkout .` on the server: they can revert `historyData.json` and `turnData.json`.
@@ -183,6 +219,8 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | `USER1_NAME` … `USER5_NAME` / `USER1_HASH` … `USER5_HASH` | — | Users and bcrypt hashes (`node generate-hash.js 'password'`) |
 | `ADMIN_USERS` | `Admin` | Comma-separated administrator users (case-insensitive) |
 | `PORT` | `3000` | HTTP port |
+| `HOST` | `0.0.0.0` | Bind address; use `127.0.0.1` behind Nginx so port 3000 is not exposed |
+| `HTTPS_PROXY_MODE` | `false` | `true` behind an HTTPS reverse proxy: trusts `X-Forwarded-*` and sends the session cookie only over HTTPS |
 | `MQTT_URL` | `mqtt://localhost:1883` | Broker for both systems |
 | `MQTT_URL_MATRIZ` / `MQTT_URL_NITRATO` | `MQTT_URL` | Per-system broker override |
 | `MQTT_TOPIC_MATRIZ` | `planta/losbronces/silos/#` | Matriz subscription |
