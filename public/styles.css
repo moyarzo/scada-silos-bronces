@@ -22,9 +22,13 @@ body {
 .logo {
   position: absolute;
   left: 15px;
-  height: 50px;
-  max-width: 80px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60px;                 /* alto de la cabecera (ARGOS + subtítulo) */
+  width: auto;
   object-fit: contain;
+  border-radius: 6px;           /* el logo trae fondo blanco */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .header h1 {
@@ -32,7 +36,7 @@ body {
   font-size: 30px;
   text-align: center;
   line-height: 1.2;
-  padding: 0 90px;
+  padding: 0 190px;             /* deja espacio al logo */
 }
 
 /* ===== MARCA ARGOS (Automated Radar Gauging & Online Stock) ===== */
@@ -817,9 +821,10 @@ body[data-page="kpi"] .chart-date-bar {
 
   .logo {
     position: static;
+    transform: none;
     display: block;
     margin: 0 auto 8px auto;
-    height: 44px;
+    height: 52px;
   }
 
   .header h1 {
