@@ -294,5 +294,14 @@ fs.writeFileSync(FILES.summary, JSON.stringify(summaryAll, null, 2));
 daysTouched.forEach(d => { DONE[d] = d === CUT_DATE ? CUT_LABEL : "24:00"; });
 fs.writeFileSync(FILES.marker, JSON.stringify({ modelo: "planilla-2026-11-05", corte: cut, dias: DONE }, null, 2));
 
+// Bitácora (pestaña Eventos, categoría Operación)
+try {
+  const ev = require("../lib/eventos");
+  ev.appendEventToFile(BASE_DIR, { ts: ev.stamp(new Date()), cat: "operacion", sev: "info",
+    tipo: "Recálculo de historial", sistema: "Nitrato", silo: null, usuario: null, ip: null,
+    detalle: daysTouched.length + " día(s): " + daysTouched.join(", ") + " · " + pointsSilo + " puntos por silo · respaldo en " +
+      path.relative(BASE_DIR, backupDir) });
+} catch (e) { console.warn("No se pudo registrar el evento en la bitácora:", e.message); }
+
 console.log("Cambios aplicados. Respaldo de los archivos originales en: " + backupDir);
 console.log("Para deshacer:  cp " + path.relative(BASE_DIR, backupDir) + "/*.json .   (con el servidor detenido)");

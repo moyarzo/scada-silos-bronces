@@ -15,4 +15,7 @@ exports/
 logs/
 *.log
 nitrato_recalculo.json
+
+# Bitácora de eventos (pestaña Eventos)
+eventos/
 backups/

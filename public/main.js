@@ -6,7 +6,7 @@ const socket = io();
 
 // ===== SUBPÁGINAS =====
 
-const PAGES = ["totales", "matriz", "nitrato", "kpi"];
+const PAGES = ["totales", "matriz", "nitrato", "kpi", "eventos"];
 const DEFAULT_PAGE = "totales";   // pestaña principal al abrir el SCADA
 const ADMIN_PAGES = [];               // subpáginas visibles solo para el usuario Admin (hoy ninguna)
 let isAdminUser = false;
@@ -204,6 +204,13 @@ fetch("/whoami")
     }
   })
   .catch(function () {});
+
+// Cambio de modo DEMO / REAL (selector solo visible para Admin): se registra en la pestaña Eventos
+document.querySelectorAll('input[name="mode"]').forEach(function (radio) {
+  radio.addEventListener("change", function () {
+    if (radio.checked) socket.emit("modoCambiado", radio.value);
+  });
+});
 
 // Lista de usuarios conectados en tiempo real, emitida por el servidor.
 socket.on("connectedUsers", function (users) {

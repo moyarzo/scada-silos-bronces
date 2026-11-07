@@ -23,6 +23,7 @@
     <button class="page-tab" role="tab" data-page="matriz">Silos Matriz</button>
     <button class="page-tab" role="tab" data-page="nitrato">Silos Nitrato</button>
     <button class="page-tab" role="tab" data-page="kpi">Indicadores</button>
+    <button class="page-tab" role="tab" data-page="eventos">Eventos</button>
   </nav>
 
   <div class="mode-bar">
@@ -83,6 +84,35 @@
     </div>
   </section>
 
+  <!-- ===== PÁGINA 5: EVENTOS (bitácora) ===== -->
+  <!-- Admin ve todas las categorías; los demás usuarios solo Comunicaciones y Proceso (el servidor también lo restringe) -->
+  <section class="page" id="page-eventos" data-page="eventos">
+    <h2 class="page-title">Eventos · últimos 3 meses</h2>
+    <div class="ev-tiles" id="evTiles"></div>
+    <div class="panel-card ev-card">
+      <div class="ev-filters">
+        <div class="ev-chips" id="evChips"></div>
+        <div class="ev-controls">
+          <label>Desde <input type="date" id="evFrom"></label>
+          <label>Hasta <input type="date" id="evTo"></label>
+          <select id="evSev" aria-label="Severidad">
+            <option value="">Toda severidad</option>
+            <option value="alarma">Alarma</option>
+            <option value="aviso">Aviso</option>
+            <option value="info">Info</option>
+          </select>
+          <select id="evSilo" aria-label="Silo"><option value="">Todos los silos</option></select>
+          <select id="evUser" class="admin-only" aria-label="Usuario" hidden><option value="">Todos los usuarios</option></select>
+          <input type="search" id="evSearch" placeholder="Buscar…" aria-label="Buscar">
+          <button class="export-btn admin-only" id="evExcel" hidden>Excel</button>
+          <button class="export-btn admin-only" id="evCsv" hidden>CSV</button>
+        </div>
+      </div>
+      <div class="ev-table-scroll"><table class="ev-table" id="evTable"></table></div>
+      <div class="ev-footer" id="evFooter"></div>
+    </div>
+  </section>
+
   <footer class="footer">
     &#169; 2026 Engineered and developed by MOH (marco.oyarzo@enaex.com) | All rights reserved
   </footer>
@@ -94,5 +124,6 @@
   <script src="matriz.js"></script>
   <script src="nitrato.js"></script>
   <script src="kpi.js"></script>
+  <script src="eventos.js"></script>
 </body>
 </html>

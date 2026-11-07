@@ -19,6 +19,7 @@ const sharedSession = require("express-socket.io-session");
 const bcrypt = require("bcryptjs");
 
 const setupMatriz = require("./lib/matriz");
+const { createEventLog } = require("./lib/eventos");
 const setupNitrato = require("./lib/nitrato");
 
 const app = express();
@@ -115,6 +116,9 @@ function requireAdmin(req, res, next) {
   return res.status(403).send("Acceso restringido: solo el usuario administrador puede descargar esta información");
 }
 
+// ===== BITÁCORA DE EVENTOS (pestaña Eventos, lib/eventos.js) =====
+var eventos = createEventLog({ baseDir: BASE_DIR, isAdmin: isAdmin });
+
 if (BEHIND_HTTPS_PROXY) app.set("trust proxy", 1);   // Nginx entrega HTTPS y reenvía a localhost
 
 var sessionMiddleware = session({
@@ -168,10 +172,18 @@ app.post("/login", async function (req, res) {
 
   try {
     var ok = await validateLogin(username, password);
+    var ip = eventos.cleanIp(req.ip);
     if (ok) {
       req.session.user = username;
+      req.session.loginAt = Date.now();
+      eventos.userLoggedIn(username);
+      eventos.log("usuarios", "info", "Inicio de sesión", { usuario: username, ip: ip,
+        detalle: "IP " + ip + " · " + eventos.describeAgent(req.get("user-agent")) + (fromPortal ? " · desde argoss.cl" : "") });
       return res.redirect("/");
     }
+    var userName = String(username || "").trim().slice(0, 40);
+    eventos.log("usuarios", "aviso", "Login fallido", { usuario: userName || "(vacío)", ip: ip,
+      detalle: "IP " + ip + " · " + (USERS[userName] ? "contraseña incorrecta" : "usuario inexistente") });
     return res.redirect(errorUrl);
   } catch (error) {
     console.error("Error validando login:", error);
@@ -180,6 +192,11 @@ app.post("/login", async function (req, res) {
 });
 
 app.get("/logout", function (req, res) {
+  if (req.session && req.session.user) {
+    eventos.userLoggedOut(req.session.user);
+    eventos.log("usuarios", "info", "Cierre de sesión", { usuario: req.session.user, ip: eventos.cleanIp(req.ip),
+      detalle: req.session.loginAt ? "Duración de la sesión: " + eventos.fmtDuration(Date.now() - req.session.loginAt) : "" });
+  }
   req.session.destroy(function () {
     res.redirect(loginPage("?planta=" + encodeURIComponent(PLANTA_ID)));
   });
@@ -213,7 +230,20 @@ io.on("connection", function (socket) {
   broadcastConnectedUsers();
   console.log("Usuario conectado por socket:", username);
 
+  // Bitácora: sala según rol (Admin recibe todos los eventos en vivo) y conexión / desconexión
+  var ip = eventos.cleanIp(socket.handshake.headers["x-forwarded-for"] || socket.handshake.address);
+  eventos.joinRooms(socket, username);
+  eventos.socketConnected(username, socket.id, ip);
+
+  // Cambio de modo DEMO / REAL (solo Admin ve el selector)
+  socket.on("modoCambiado", function (modo) {
+    if (!isAdmin(username) || (modo !== "demo" && modo !== "real")) return;
+    eventos.log("usuarios", "info", "Cambio de modo", { usuario: username, ip: ip,
+      detalle: modo === "demo" ? "Modo DEMO (datos aleatorios en su navegador)" : "Modo REAL" });
+  });
+
   socket.on("disconnect", function () {
+    eventos.socketDisconnected(username, socket.id);
     connectedUsers.delete(socket.id);
     broadcastConnectedUsers();
     console.log("Usuario desconectado:", username);
@@ -222,13 +252,31 @@ io.on("connection", function (socket) {
 
 // ===== SISTEMAS =====
 
-setupMatriz({ app: app, io: matrizNsp, requireAuth: requireAuth, requireAdmin: requireAdmin, baseDir: BASE_DIR });
-setupNitrato({ app: app, io: nitratoNsp, requireAuth: requireAuth, requireAdmin: requireAdmin, baseDir: BASE_DIR });
+// Descargas de Excel / CSV (solo Admin): se registran en la bitácora
+var DOWNLOAD_NAMES = {
+  "/matriz/export-data": "Excel diario Matriz", "/export-data": "Excel diario Matriz",
+  "/matriz/export-daily-summary": "Historial 30 días Matriz", "/export-daily-summary": "Historial 30 días Matriz",
+  "/nitrato/export-data": "Excel diario Nitrato", "/nitrato/export-daily-summary": "Historial 30 días Nitrato"
+};
+app.use(function (req, res, next) {
+  var name = DOWNLOAD_NAMES[req.path];
+  if (name && req.method === "GET" && req.session && isAdmin(req.session.user)) {
+    eventos.log("usuarios", "info", "Descarga", { usuario: req.session.user, ip: eventos.cleanIp(req.ip), detalle: name });
+  }
+  next();
+});
+
+setupMatriz({ app: app, io: matrizNsp, requireAuth: requireAuth, requireAdmin: requireAdmin, baseDir: BASE_DIR, eventos: eventos });
+setupNitrato({ app: app, io: nitratoNsp, requireAuth: requireAuth, requireAdmin: requireAdmin, baseDir: BASE_DIR, eventos: eventos });
+
+eventos.attachSocket(io);
+eventos.setupRoutes(app, requireAuth, requireAdmin);
 
 // login.html queda servido por la ruta /login.html de arriba.
 // Todo lo demás (dashboard, JS, CSS del panel) requiere sesión activa.
 app.use("/", requireAuth, express.static(PUBLIC_DIR));
 
 server.listen(PORT, HOST, function () {
+  eventos.start();
   console.log("ARGOSS — monitoreo de silos (Matriz + Nitrato) corriendo en puerto " + PORT);
 });

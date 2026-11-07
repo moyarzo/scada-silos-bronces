@@ -1017,3 +1017,270 @@ body[data-page="kpi"] .chart-date-bar {
     padding: 3px 8px;
   }
 }
+
+/* ===== Pestaña Eventos ===== */
+
+body[data-page="eventos"] .chart-date-bar,
+body[data-page="eventos"] .only-matriz,
+body[data-page="eventos"] .only-nitrato {
+  display: none;
+}
+
+.ev-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 15px;
+  padding: 10px 16px;
+}
+
+.ev-tile {
+  background: #f9fafb;
+  border-radius: 10px;
+  border-top: 4px solid #cbd5e1;
+  padding: 10px 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.ev-tile.ok      { border-top-color: #16a34a; }
+.ev-tile.aviso   { border-top-color: #d97706; }
+.ev-tile.alarma  { border-top-color: #dc2626; }
+
+.ev-tile-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ev-tile-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.ev-tile-sub {
+  font-size: 12px;
+  color: #475569;
+}
+
+.ev-card {
+  margin: 0 16px 16px 16px;
+  padding: 12px 14px;
+}
+
+.ev-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ev-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ev-chip {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ev-chip.active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.ev-chip .ev-count {
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+.ev-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: #475569;
+}
+
+.ev-controls input,
+.ev-controls select {
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+.ev-controls input[type="search"] {
+  flex: 1 1 160px;
+  min-width: 140px;
+}
+
+.ev-controls .export-btn {
+  margin: 0;
+}
+
+.ev-table-scroll {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.ev-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ev-table th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  color: #334155;
+  text-align: left;
+  padding: 7px 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ev-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+  vertical-align: top;
+}
+
+.ev-table tr.ev-day td {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.ev-table tr.ev-new td {
+  animation: evFlash 2.5s ease-out;
+}
+
+@keyframes evFlash {
+  from { background: #dbeafe; }
+  to   { background: transparent; }
+}
+
+.ev-time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: #334155;
+}
+
+.ev-sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ev-sev::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ev-sev.info   { background: #f1f5f9; color: #475569; }
+.ev-sev.aviso  { background: #fef3c7; color: #b45309; }
+.ev-sev.alarma { background: #fee2e2; color: #b91c1c; }
+
+.ev-cat {
+  white-space: nowrap;
+  color: #475569;
+}
+
+.ev-type {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ev-detail {
+  color: #475569;
+  min-width: 260px;
+}
+
+.ev-silo {
+  white-space: nowrap;
+}
+
+.ev-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+.ev-tile-value.small {
+  font-size: 17px;
+}
+
+@media (max-width: 600px) {
+  .ev-tiles {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
+  }
+  .ev-tile {
+    padding: 8px 10px;
+  }
+  .ev-tile-value {
+    font-size: 18px;
+  }
+  .ev-tile-value.small {
+    font-size: 14px;
+  }
+  .ev-card {
+    margin: 0 10px 10px 10px;
+    padding: 10px;
+  }
+  .ev-controls label {
+    flex: 1 1 45%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ev-controls select {
+    flex: 1 1 45%;
+  }
+}
+
+.ev-more {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ev-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 18px !important;
+}

@@ -29,6 +29,7 @@ One server and one web page monitor two silo systems:
 - 30-day history, browsable by date
 - Plant capacity gauge per product
 - **Indicators** page: daily consumption, receptions and per-silo usage over 30 days, with a radar-noise filter
+- **Events** page: a 3-month event log — user sessions and actions, communications (MQTT broker, silos or HMI without data), process events (refills, jumps, false readings, radar noise) and operation (shift records, daily summary), with filters, live updates and Excel/CSV export
 - Login with bcrypt-hashed users, 8 h sessions, live list of connected users
 - Multi-plant login: one domain (`argoss.cl`) with a plant selector; each plant keeps its own server, users and history
 - Role-based access: downloads and DEMO mode are visible only to the `Admin` user
@@ -48,7 +49,7 @@ The login asks for the **plant**, user and password. On `argoss.cl` the form is 
 
 ### Dashboard
 
-The page has four tabs. ARGOSS opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`). The user interface is in Spanish.
+The page has five tabs. ARGOSS opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`, `/#eventos`). The user interface is in Spanish.
 
 | Tab | Content |
 |---|---|
@@ -56,6 +57,7 @@ The page has four tabs. ARGOSS opens on **Totalizadores**, and the active tab is
 | **Silos Matriz** | 8 silo cards: level, volume, mass, %, gauge, fill-% mini chart, product selector (DEMO mode) |
 | **Silos Nitrato** | 8 silo cards with the same data; `≈` marks levels in the hopper zone, where the value is approximate |
 | **Indicadores** (indicators) | Last 30 days from history: per product, today's consumption, daily average, 30-day consumption and receptions with number of refills; daily consumption vs. reception chart; per-silo daily consumption table with totals, refills, discarded jumps (power cuts) and measured radar noise |
+| **Eventos** (events) | Event log of the last 3 months: status cards (communications now, silos without data, today's alarms, refills and jumps, logins), category filters with counts, date / severity / silo / user filters, search, table grouped by day with live updates. See [Event log](#event-log-libeventosjs) |
 
 The top bar is shared by all tabs: REAL/DEMO selector (Admin only; other users always see REAL), a single MQTT signal indicator (both systems share the HMI and broker; it turns green with the latest reading from either), the chart-date selector and the download buttons (Admin only, shown according to the active tab).
 
@@ -122,6 +124,25 @@ Indicators are computed per silo from the fill % stored every 5 minutes, convert
 - Matriz silos use their current product assignment.
 - The **Radar noise** column (1σ, in tonnes) helps detect a sensor that needs attention.
 - The tab loads when opened and refreshes automatically every 5 minutes while it is visible. The filter runs on the server and is not shown on the page; its parameters are set in `.env` (see [Configuration](#configuration-env)).
+
+---
+
+## Event log (`lib/eventos.js`)
+
+The **Eventos** tab records, with date and time, everything relevant that happens in the system. Each event has a severity — **Info**, **Aviso** (warning) or **Alarma** (alarm) — and a category:
+
+| Category | Events | Visible to |
+|---|---|---|
+| **Comunicaciones** | Server started / stopped (with the Git version; an unrecorded previous stop is flagged as a VM power cut or crash) · MQTT broker connected / disconnected / reconnected · **Silo sin datos**: a silo that publishes nothing for `EVENTOS_SIN_DATOS_MIN` minutes, and when it recovers · **HMI sin datos** (alarm): no silo publishes, likely a power or network cut at the plant, and when it recovers with the outage duration | Everyone |
+| **Proceso** | **Recarga iniciada** (a gradual refill is confirmed) and **Recarga** (when it ends, with tonnes, duration and start → end mass) · **Salto** (a jump that persists) · **Lectura falsa descartada** (the level jumped and came back) · **Saltos frecuentes** (more than 3 jumps in a day for one silo; the rest are not listed one by one) · **Lectura fuera de rango** (0 %, ≥ 99.5 % or an impossible radar distance) · **Ruido del radar elevado** (today's noise is at least 3 times the usual of the previous 7 days) | Everyone |
+| **Usuarios** | Login, failed login (user typed and IP; never the password), logout with session length · connected / disconnected (page opened with an active session, or closed for more than 1 min) · downloads · Matriz product change · REAL / DEMO mode change | Admin |
+| **Operación** | Shift records 07:00 / 19:00 with the stock per product · daily summary saved · nitrate history recalculation (`tools/`) · disk almost full | Admin |
+
+Refills, jumps and false readings use exactly the same rules as the Indicators tab (`lib/kpi.js`), checked every 5 minutes, and keep the time at which they happened. A jump is recorded 60 minutes later, once it is known whether the level came back (false reading). High and low level alarms are not recorded.
+
+**Access:** Admin sees all categories, the user column (with IP in the export) and the **Excel** / **CSV** download of the filtered events. Other users only see *Comunicaciones* and *Proceso*. The server enforces it: `/eventos` never returns user or operation events to them, and `/eventos/export` answers 403.
+
+**Storage:** one file per month in `eventos/` (`eventos_YYYY-MM.jsonl`, one JSON line per event, append-only so a power cut cannot corrupt earlier events). Events older than `EVENTOS_RETENCION_DIAS` (90 days) are deleted automatically. The folder is not tracked by Git, so `git pull` never touches it.
 
 ---
 
@@ -250,6 +271,9 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | `KPI_RECARGA_MIN_TON` | `2` | Minimum mass to count a refill (t) |
 | `KPI_RECARGA_MIN_PASOS` | `3` | Minimum consecutive rising steps for a gradual refill |
 | `KPI_SALTO_PCT` | `10` | Maximum credible change in fill % per 5 min; larger changes are jumps |
+| `EVENTOS_RETENCION_DIAS` | `90` | Days the event log is kept (3 months) |
+| `EVENTOS_SIN_DATOS_MIN` | `10` | Minutes without readings before a silo (or the whole HMI) is reported without data |
+| `EVENTOS_DISCO_PCT` | `85` | Disk usage (%) that triggers a "disk almost full" event |
 
 ---
 
@@ -259,10 +283,12 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 |---|---|---|
 | Totalizadores, Silos Matriz, Silos Nitrato | ✔ | ✔ |
 | Indicadores tab | ✔ | ✔ |
+| Eventos tab: communications and process events | ✔ | ✔ |
+| Eventos tab: user and operation events, user filter, Excel / CSV | ✔ | — |
 | REAL / DEMO selector | ✔ | — (always REAL) |
 | Excel / CSV downloads | ✔ | — |
 
-Restrictions are enforced on the server too: download routes return HTTP 403 for non-admin users.
+Restrictions are enforced on the server too: download routes return HTTP 403 for non-admin users, and the event log never sends user or operation events to them.
 
 ---
 
@@ -276,19 +302,21 @@ scada-silos-bronces/
 │   ├── matriz.js             ← Matriz backend   (Socket.IO /matriz,  routes /matriz/*)
 │   ├── nitrato.js            ← Nitrate backend  (Socket.IO /nitrato, routes /nitrato/*)
 │   ├── nitrato-model.js      ← Nitrate geometry, radar calibration, level and volume
-│   └── kpi.js                ← Consumption / reception / per-silo indicators
+│   ├── kpi.js                ← Consumption / reception / per-silo indicators
+│   └── eventos.js            ← Event log: recording, monitoring, query and export
 ├── tools/
 │   └── recalcular-historial-nitrato.js   ← Recalculate nitrate history after a model change
 ├── deploy/
 │   ├── nginx-argoss.conf     ← Nginx: argoss.cl portal + lossauces.argoss.cl
 │   └── publicar-portal.sh    ← Publish the login + plant list as the argoss.cl portal
 ├── public/
-│   ├── index.html            ← Dashboard with the four tabs
+│   ├── index.html            ← Dashboard with the five tabs
 │   ├── login.html            ← Login with plant selector (also served as the argoss.cl portal)
 │   ├── main.js               ← Tabs, session, roles, shared MQTT status, shift table and capacity gauge
 │   ├── matriz.js             ← Matriz frontend
 │   ├── nitrato.js            ← Nitrate frontend
 │   ├── kpi.js                ← Indicators tab
+│   ├── eventos.js            ← Events tab
 │   ├── styles.css
 │   └── logo.png
 ├── docs/demo.gif             ← README walkthrough
@@ -313,6 +341,8 @@ scada-silos-bronces/
 | `exports/stock_diario_YYYYMMDD.xlsx` | `exports/stock_nitrato_YYYYMMDD.xlsx` | Daily Excel report |
 | `historial_YYYYMMDD.csv` | `resumen_nitrato_YYYYMMDD.csv` | 30-day CSV export |
 
+Shared by both systems: `eventos/eventos_YYYY-MM.jsonl` (event log, 3 months).
+
 ### HTTP routes
 
 | Matriz | Nitrate | Access |
@@ -323,6 +353,11 @@ scada-silos-bronces/
 | `/matriz/kpi` | `/nitrato/kpi` | Any logged-in user |
 
 The legacy routes `/export-data`, `/export-daily-summary` and `/export-trend` still work for Matriz.
+
+| Event log | Access |
+|---|---|
+| `/eventos?desde=&hasta=&cat=&sev=&silo=&usuario=&q=&limit=&offset=` | Any logged-in user (non-admin users only get communications and process events) |
+| `/eventos/export?formato=xlsx` or `formato=csv` (same filters) | Admin |
 
 ---
 
