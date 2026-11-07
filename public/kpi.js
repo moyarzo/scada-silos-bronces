@@ -51,8 +51,6 @@ function load() {
     lastData = { matriz, nitrato };
     render(lastData);
     if (container) container.classList.remove("kpi-loading");
-    const upd = document.getElementById("kpiUpdated");
-    if (upd) upd.textContent = "Actualizado " + new Date().toLocaleTimeString("es-CL", { hour12: false });
   });
 }
 
@@ -210,9 +208,6 @@ function render(data) {
   renderCharts(products);
   renderSiloTable("kpiSiloMatriz", data.matriz, "Silos Matriz");
   renderSiloTable("kpiSiloNitrato", data.nitrato, "Silos Nitrato");
-  const note = document.getElementById("kpiThreshold");
-  const thr = (data.matriz && data.matriz.umbralTon) || (data.nitrato && data.nitrato.umbralTon);
-  if (note && thr != null) note.textContent = `Filtro de ruido del radar: mediana de 35 min y umbral adaptativo por silo (mínimo ${fmt(thr, 1)} t).`;
 }
 
 // ===== CICLO DE VIDA DE LA PESTAÑA =====

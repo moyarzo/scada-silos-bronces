@@ -121,6 +121,7 @@ Indicators are computed per silo from the fill % stored every 5 minutes, convert
 - The **Saltos** column shows how many jumps were discarded per silo in 30 days.
 - Matriz silos use their current product assignment.
 - The **Radar noise** column (1σ, in tonnes) helps detect a sensor that needs attention.
+- The tab loads when opened and refreshes automatically every 5 minutes while it is visible. The filter runs on the server and is not shown on the page; its parameters are set in `.env` (see [Configuration](#configuration-env)).
 
 ---
 

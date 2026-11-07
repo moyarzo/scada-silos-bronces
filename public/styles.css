@@ -618,15 +618,6 @@ body[data-page="kpi"] .chart-date-bar {
   display: none;
 }
 
-.kpi-note {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  font-size: 13px;
-  color: #64748b;
-  margin: 4px 16px 0 16px;
-}
 
 #kpiContent {
   transition: opacity 0.2s ease;
