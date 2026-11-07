@@ -1,13 +1,17 @@
-# SCADA-LB — Bulk Silo Monitoring (Matriz + Ammonium Nitrate)
+# ARGOS — Automated Radar Gauging & Online Stock
 
-SCADA-LB is a real-time monitoring system for bulk product storage silos at the Los Bronces plant. A radar level sensor installed in each silo measures the distance to the product surface and communicates over Modbus with a Delta HMI, which publishes the readings to an MQTT broker. The web dashboard turns those readings into level, volume, mass and fill percentage per silo, plant totals per product, shift records, alarms, 30-day history and consumption indicators.
+**Bulk silo monitoring for Matriz and ammonium nitrate · Los Bronces plant**
+
+ARGOS is a real-time monitoring system for bulk product storage silos at the Los Bronces plant. A radar level sensor installed in each silo measures the distance to the product surface and communicates over Modbus with a Delta HMI, which publishes the readings to an MQTT broker. The web dashboard turns those readings into level, volume, mass and fill percentage per silo, plant totals per product, shift records, alarms, 30-day history and consumption indicators.
+
+The name comes from Argos Panoptes, the hundred-eyed giant of Greek mythology who never stopped watching — like the radars that keep every silo under constant observation.
 
 One server and one web page monitor two silo systems:
 
 - **Matriz silos** — 8 silos · products DL-5 / VE-03 / ASE
 - **Ammonium nitrate silos** — 8 silos
 
-![SCADA-LB walkthrough with simulated data](docs/demo.gif)
+![ARGOS walkthrough with simulated data](docs/demo.gif)
 
 *Walkthrough with simulated plant data: live MQTT readings (consumption and a silo being refilled up to the high-level alarm) and 30 days of generated history.*
 
@@ -33,7 +37,7 @@ One server and one web page monitor two silo systems:
 
 ## Pages
 
-The page has four tabs. The SCADA opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`). The user interface is in Spanish.
+The page has four tabs. ARGOS opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`). The user interface is in Spanish.
 
 | Tab | Content |
 |---|---|

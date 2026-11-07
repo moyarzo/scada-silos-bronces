@@ -35,6 +35,24 @@ body {
   padding: 0 90px;
 }
 
+/* ===== MARCA ARGOS (Automated Radar Gauging & Online Stock) ===== */
+.header h1 .brand {
+  display: block;
+  font-size: 1.15em;
+  letter-spacing: 0.32em;
+  margin-right: -0.32em;   /* compensa el espaciado de la última letra para centrar */
+  color: #0f172a;
+}
+
+.header h1 .brand-sub {
+  display: block;
+  font-size: 0.5em;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  color: #475569;
+  text-transform: uppercase;
+}
+
 /* ===== BARRA DE SESIÓN (usuario / conectados / logout) ===== */
 
 .session-bar {

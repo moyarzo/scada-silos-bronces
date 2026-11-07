@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Acceso - Silos LB</title>
+<title>ARGOS · Acceso</title>
 <style>
   body {
     margin: 0;
@@ -23,8 +23,20 @@
   }
   .card h1 {
     color: #f1f5f9;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-size: 34px;
+    letter-spacing: 0.3em;
+    margin: 0 -0.3em 4px 0;
+  }
+  .card .tagline {
+    color: #94a3b8;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .card .subtitle {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin-bottom: 22px;
   }
   input {
     width: 100%;
@@ -58,7 +70,9 @@
 </head>
 <body>
   <div class="card">
-    <h1>Monitoreo Silos Matriz y Nitrato</h1>
+    <h1>ARGOS</h1>
+    <div class="tagline">Automated Radar Gauging &amp; Online Stock</div>
+    <div class="subtitle">Monitoreo de silos Matriz y Nitrato<br>Planta Los Bronces</div>
     <div class="error" id="errorMsg" style="display:none;">Usuario o contraseña incorrectos</div>
     <form method="POST" action="/login">
       <input type="text" name="username" placeholder="Usuario" autocomplete="username" required>
