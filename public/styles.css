@@ -97,16 +97,26 @@ body {
 
 /* ===== BARRA DE SESIÓN (usuario / conectados / logout) ===== */
 
+/* Fila 1: usuario + Cerrar sesión · Fila 2: usuarios conectados (bajo el botón) */
 .session-bar {
   position: absolute;
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;   /* el botón ajustado a su texto, el usuario junto a él */
+  grid-template-areas:
+    "user   logout"
+    "online online";
   align-items: center;
-  gap: 10px;
+  justify-items: end;
+  gap: 6px 10px;
   font-size: 13px;
 }
+
+.session-bar .current-user { grid-area: user; }
+.session-bar .connected-users { grid-area: online; }
+.session-bar a { grid-area: logout; }
 
 .session-bar .current-user {
   font-weight: bold;
@@ -120,7 +130,8 @@ body {
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 4px 10px;
-  white-space: nowrap;
+  max-width: 340px;
+  text-align: right;
 }
 
 .session-bar a {
@@ -817,7 +828,7 @@ body[data-page="kpi"] .chart-date-bar {
 }
 
 /* Pantallas medianas: la barra de sesión pasa bajo el título para no taparlo */
-@media (max-width: 1750px) and (min-width: 769px) {
+@media (max-width: 1250px) and (min-width: 769px) {
   .header {
     flex-wrap: wrap;
   }
@@ -825,8 +836,8 @@ body[data-page="kpi"] .chart-date-bar {
   .session-bar {
     position: static;
     transform: none;
-    width: 100%;
-    justify-content: flex-end;
+    width: auto;
+    margin-left: auto;          /* alineada a la derecha, bajo el título */
     margin-top: 6px;
   }
 }
@@ -866,10 +877,13 @@ body[data-page="kpi"] .chart-date-bar {
   .session-bar {
     position: static;
     transform: none;
-    justify-content: center;
-    flex-wrap: wrap;
     margin-top: 10px;
-    width: 100%;
+    width: auto;                /* bloque centrado (la cabecera es una columna centrada) */
+  }
+
+  .session-bar .connected-users {
+    justify-self: center;
+    text-align: center;
   }
 
   .top-panel {
