@@ -6,6 +6,8 @@ ARGOSS is a real-time monitoring system for bulk product storage silos at the Lo
 
 The name ARGOSS comes from Argos Panoptes, the hundred-eyed giant of Greek mythology who never stopped watching — like the radars that keep every silo under constant observation.
 
+ARGOSS is published on **argoss.cl**, a single domain prepared for several plants: the login page has a plant selector and each plant runs its own independent server on its own subdomain (`lossauces.argoss.cl`).
+
 One server and one web page monitor two silo systems:
 
 - **Matriz silos** — 8 silos · products DL-5 / VE-03 / ASE
@@ -28,6 +30,7 @@ One server and one web page monitor two silo systems:
 - Plant capacity gauge per product
 - **Indicators** page: daily consumption, receptions and per-silo usage over 30 days, with a radar-noise filter
 - Login with bcrypt-hashed users, 8 h sessions, live list of connected users
+- Multi-plant login: one domain (`argoss.cl`) with a plant selector; each plant keeps its own server, users and history
 - Role-based access: downloads and DEMO mode are visible only to the `Admin` user
 - Daily Excel report and 30-day CSV export per system (Admin only)
 - REAL / DEMO modes (DEMO generates random data in the browser)
@@ -36,6 +39,14 @@ One server and one web page monitor two silo systems:
 ---
 
 ## Pages
+
+### Login
+
+<img src="docs/login.png" alt="ARGOSS login with plant selector" width="360">
+
+The login asks for the **plant**, user and password. On `argoss.cl` the form is sent to the selected plant's server; on a plant server (or by IP) the local plant is preselected and the login stays local. A failed login or logout returns to the same screen with the plant preselected, and the browser remembers the last plant used. See [Publishing on argoss.cl](#publishing-on-argosscl-multi-plant).
+
+### Dashboard
 
 The page has four tabs. ARGOSS opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`). The user interface is in Spanish.
 
@@ -280,6 +291,7 @@ scada-silos-bronces/
 │   ├── styles.css
 │   └── logo.png
 ├── docs/demo.gif             ← README walkthrough
+├── docs/login.png            ← Login screenshot
 ├── template.xlsx             ← Daily Excel template (both systems)
 ├── siloConfig.json           ← Product per Matriz silo
 ├── plantas.json              ← Plants shown in the login selector
