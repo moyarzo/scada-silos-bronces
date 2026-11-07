@@ -24,7 +24,7 @@ body {
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  height: 60px;                 /* alto de la cabecera (ARGOS + subtítulo) */
+  height: 60px;                 /* alto de la cabecera (ARGOSS + subtítulo) */
   width: auto;
   object-fit: contain;
   border-radius: 6px;           /* el logo trae fondo blanco */
@@ -39,7 +39,7 @@ body {
   padding: 0 190px;             /* deja espacio al logo */
 }
 
-/* ===== MARCA ARGOS (Automated Radar Gauging & Online Stock) ===== */
+/* ===== MARCA ARGOSS (Automated Radar Gauging & Online Stock System) ===== */
 .header h1 .brand {
   display: block;
   font-size: 1.15em;

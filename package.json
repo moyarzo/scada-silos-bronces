@@ -1,7 +1,7 @@
 {
   "name": "scada-silos-lb",
   "version": "2.0.0",
-  "description": "ARGOS (Automated Radar Gauging & Online Stock): monitoreo de silos Matriz y Nitrato de Amonio (Los Bronces) con MQTT",
+  "description": "ARGOSS (Automated Radar Gauging & Online Stock System): monitoreo de silos Matriz y Nitrato de Amonio con MQTT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

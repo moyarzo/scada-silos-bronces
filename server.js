@@ -2,7 +2,7 @@
 const ENV_FILE = require("path").join(__dirname, ".env");
 const envResult = require("dotenv").config({ path: ENV_FILE });
 
-// ===== ARGOS (Automated Radar Gauging & Online Stock) — Silos Matriz + Nitrato en un solo servidor =====
+// ===== ARGOSS (Automated Radar Gauging & Online Stock System) — Silos Matriz + Nitrato en un solo servidor =====
 // - Login / sesión / usuarios conectados  → este archivo
 // - Lógica Silos Matriz                   → lib/matriz.js   (Socket.IO /matriz)
 // - Lógica Silos Nitrato                  → lib/nitrato.js  (Socket.IO /nitrato)
@@ -192,5 +192,5 @@ setupNitrato({ app: app, io: nitratoNsp, requireAuth: requireAuth, requireAdmin:
 app.use("/", requireAuth, express.static(PUBLIC_DIR));
 
 server.listen(PORT, HOST, function () {
-  console.log("ARGOS — monitoreo de silos (Matriz + Nitrato) corriendo en puerto " + PORT);
+  console.log("ARGOSS — monitoreo de silos (Matriz + Nitrato) corriendo en puerto " + PORT);
 });
