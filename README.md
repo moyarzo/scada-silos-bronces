@@ -59,6 +59,8 @@ The page has five tabs. ARGOSS opens on **Totalizadores**, and the active tab is
 | **Indicadores** (indicators) | Last 30 days from history: per product, today's consumption, daily average, 30-day consumption and receptions with number of refills; daily consumption vs. reception chart; per-silo daily consumption table with totals, refills, discarded jumps (power cuts) and measured radar noise |
 | **Eventos** (events) | Event log of the last 3 months: status cards (communications now, silos without data, today's alarms, refills and jumps, logins), category filters with counts, date / severity / silo / user filters, search, table grouped by day with live updates. See [Event log](#event-log-libeventosjs) |
 
+The header shows the Enaex logo with the **plant name** below it (taken from `plantas.json` using `PLANTA_ID`, so each plant server shows its own), **ARGOSS** with the **version number** next to it (hover to see the Git commit) and its meaning, *Automated Radar Gauging & Online Stock System*, plus the current user, connected users and logout. The browser tab title is "ARGOSS · <plant>".
+
 The top bar is shared by all tabs: REAL/DEMO selector (Admin only; other users always see REAL), a single MQTT signal indicator (both systems share the HMI and broker; it turns green with the latest reading from either), the chart-date selector and the download buttons (Admin only, shown according to the active tab).
 
 **Plant capacity** (gauge in Totalizadores): DL-5 420 t, ASE 37 t, Nitrate 480 t. Change it in `PRODUCT_CAPACITY` in `public/matriz.js` and `public/nitrato.js` (VE-03 has no capacity defined).
@@ -133,7 +135,7 @@ The **Eventos** tab records, with date and time, everything relevant that happen
 
 | Category | Events | Visible to |
 |---|---|---|
-| **Comunicaciones** | Server started / stopped (with the Git version; an unrecorded previous stop is flagged as a VM power cut or crash) · MQTT broker connected / disconnected / reconnected · **Silo sin datos**: a silo that publishes nothing for `EVENTOS_SIN_DATOS_MIN` minutes, and when it recovers · **HMI sin datos** (alarm): no silo publishes, likely a power or network cut at the plant, and when it recovers with the outage duration | Everyone |
+| **Comunicaciones** | Server started / stopped (with the version and Git commit; an unrecorded previous stop is flagged as a VM power cut or crash) · MQTT broker connected / disconnected / reconnected · **Silo sin datos**: a silo that publishes nothing for `EVENTOS_SIN_DATOS_MIN` minutes, and when it recovers · **HMI sin datos** (alarm): no silo publishes, likely a power or network cut at the plant, and when it recovers with the outage duration | Everyone |
 | **Proceso** | **Recarga iniciada** (a gradual refill is confirmed) and **Recarga** (when it ends, with tonnes, duration and start → end mass) · **Salto** (a jump that persists) · **Lectura falsa descartada** (the level jumped and came back) · **Saltos frecuentes** (more than 3 jumps in a day for one silo; the rest are not listed one by one) · **Lectura fuera de rango** (0 %, ≥ 99.5 % or an impossible radar distance) · **Ruido del radar elevado** (today's noise is at least 3 times the usual of the previous 7 days) | Everyone |
 | **Usuarios** | Login, failed login (user typed and IP; never the password), logout with session length · connected / disconnected (page opened with an active session, or closed for more than 1 min) · downloads · Matriz product change · REAL / DEMO mode change | Admin |
 | **Operación** | Shift records 07:00 / 19:00 with the stock per product · daily summary saved · nitrate history recalculation (`tools/`) · disk almost full | Admin |
@@ -259,7 +261,7 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | `PORT` | `3000` | HTTP port |
 | `HOST` | `0.0.0.0` | Bind address; use `127.0.0.1` behind Nginx so port 3000 is not exposed |
 | `HTTPS_PROXY_MODE` | `false` | `true` behind an HTTPS reverse proxy: trusts `X-Forwarded-*` and sends the session cookie only over HTTPS |
-| `PLANTA_ID` | `lossauces` | Plant served by this server (an `id` from `plantas.json`); its login is sent locally |
+| `PLANTA_ID` | `lossauces` | Plant served by this server (an `id` from `plantas.json`): its name is shown under the logo and in the browser tab, and its login is sent locally |
 | `PORTAL_URL` | — | Plant-selection portal (e.g. `https://argoss.cl`). A failed portal login and logout return here |
 | `MQTT_URL` | `mqtt://localhost:1883` | Broker for both systems |
 | `MQTT_URL_MATRIZ` / `MQTT_URL_NITRATO` | `MQTT_URL` | Per-system broker override |
@@ -358,6 +360,20 @@ The legacy routes `/export-data`, `/export-daily-summary` and `/export-trend` st
 |---|---|
 | `/eventos?desde=&hasta=&cat=&sev=&silo=&usuario=&q=&limit=&offset=` | Any logged-in user (non-admin users only get communications and process events) |
 | `/eventos/export?formato=xlsx` or `formato=csv` (same filters) | Admin |
+
+---
+
+## Versioning
+
+The version shown next to ARGOSS is the `version` field of [`package.json`](package.json); the server reads it at startup (`pm2 restart` after changing it). The Git commit appears when hovering over it, in the startup log and in the **Servidor iniciado** event.
+
+| Version | Milestone |
+|---|---|
+| 1.x | Separate Matriz and Nitrate SCADAs |
+| 2.0 | Matriz + Nitrate in one system |
+| **3.0** | ARGOSS: Indicators, Events, multi-plant login, argoss.cl |
+
+Convention: `3.0.1`, `3.0.2`… for fixes (a calculation or text adjustment); `3.1`, `3.2`… for new features (a new tab or indicator); a new major version for changes in how the system is deployed or stores data.
 
 ---
 

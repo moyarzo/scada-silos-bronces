@@ -191,6 +191,17 @@ fetch("/whoami")
   .then(function (data) {
     document.getElementById("currentUser").innerText = "Usuario: " + data.user;
 
+    // Planta bajo el logo, pestaña del navegador y versión junto a ARGOSS
+    if (data.planta) {
+      document.getElementById("plantName").textContent = data.planta;
+      document.title = "ARGOSS · " + data.planta.replace(/^Planta\s+/i, "");
+    }
+    if (data.version) {
+      const ver = document.getElementById("appVersion");
+      ver.textContent = "v" + data.version;
+      ver.title = "ARGOSS v" + data.version + (data.commit ? " · " + data.commit : "");
+    }
+
     isAdminUser = !!data.isAdmin;
     document.querySelectorAll(".admin-only").forEach(function (el) {
       el.hidden = !data.isAdmin;

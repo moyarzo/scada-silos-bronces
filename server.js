@@ -54,6 +54,22 @@ function readPlantas() {
   }
 }
 
+// Nombre de la planta de este servidor (cabecera y pestaña del navegador)
+function plantaNombre() {
+  var p = readPlantas().filter(function (x) { return x.id === PLANTA_ID; })[0];
+  return (p && p.nombre) || PLANTA_ID;
+}
+
+// ===== VERSIÓN =====
+// Número de versión: campo "version" de package.json (se muestra junto a ARGOSS).
+// Commit de Git: se muestra al pasar el mouse sobre la versión.
+const APP_VERSION = require("./package.json").version;
+const APP_COMMIT = (function () {
+  try {
+    return require("child_process").execSync("git rev-parse --short HEAD", { cwd: __dirname, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch (e) { return ""; }
+})();
+
 function loginPage(query) {
   // Con portal configurado, el login vuelve al portal; si no, al login local
   return (PORTAL_URL ? PORTAL_URL + "/" : "/login.html") + (query || "");
@@ -204,7 +220,13 @@ app.get("/logout", function (req, res) {
 
 // El propio frontend puede pedir quién está logueado
 app.get("/whoami", requireAuth, function (req, res) {
-  res.json({ user: req.session.user, isAdmin: isAdmin(req.session.user) });
+  res.json({
+    user: req.session.user,
+    isAdmin: isAdmin(req.session.user),
+    planta: plantaNombre(),
+    version: APP_VERSION,
+    commit: APP_COMMIT
+  });
 });
 
 // ===== SOCKET.IO — sesión compartida en todos los namespaces =====
@@ -278,5 +300,5 @@ app.use("/", requireAuth, express.static(PUBLIC_DIR));
 
 server.listen(PORT, HOST, function () {
   eventos.start();
-  console.log("ARGOSS — monitoreo de silos (Matriz + Nitrato) corriendo en puerto " + PORT);
+  console.log("ARGOSS v" + APP_VERSION + (APP_COMMIT ? " (" + APP_COMMIT + ")" : "") + " — " + plantaNombre() + " — corriendo en puerto " + PORT);
 });
