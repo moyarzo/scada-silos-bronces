@@ -8,7 +8,7 @@ const socket = io();
 
 const PAGES = ["totales", "matriz", "nitrato", "kpi"];
 const DEFAULT_PAGE = "totales";   // pestaña principal al abrir el SCADA
-const ADMIN_PAGES = ["kpi"];          // subpáginas visibles solo para el usuario Admin
+const ADMIN_PAGES = [];               // subpáginas visibles solo para el usuario Admin (hoy ninguna)
 let isAdminUser = false;
 
 function getPageFromHash() {

@@ -28,7 +28,7 @@ One server and one web page monitor two silo systems:
 - Plant capacity gauge per product
 - **Indicators** page: daily consumption, receptions and per-silo usage over 30 days, with a radar-noise filter
 - Login with bcrypt-hashed users, 8 h sessions, live list of connected users
-- Role-based access: downloads, DEMO mode and Indicators are visible only to the `Admin` user
+- Role-based access: downloads and DEMO mode are visible only to the `Admin` user
 - Daily Excel report and 30-day CSV export per system (Admin only)
 - REAL / DEMO modes (DEMO generates random data in the browser)
 - Product assignment per Matriz silo
@@ -44,7 +44,7 @@ The page has four tabs. ARGOS opens on **Totalizadores**, and the active tab is 
 | **Totalizadores** (plant totals) | Daily trend charts 07:00–19:00 for DL-5, ASE (and VE-03 when a silo holds it) and Nitrate. Under each chart: shift-record table (07:00 start, 19:00 close, variation) and a plant-capacity gauge |
 | **Silos Matriz** | 8 silo cards: level, volume, mass, %, gauge, fill-% mini chart, product selector (DEMO mode) |
 | **Silos Nitrato** | 8 silo cards with the same data; `≈` marks levels in the hopper zone, where the value is approximate |
-| **Indicadores** (Admin only) | Last 30 days from history: per product, today's consumption, daily average, 30-day consumption and receptions with number of refills; daily consumption vs. reception chart; per-silo daily consumption table with totals and measured radar noise |
+| **Indicadores** (indicators) | Last 30 days from history: per product, today's consumption, daily average, 30-day consumption and receptions with number of refills; daily consumption vs. reception chart; per-silo daily consumption table with totals, refills, discarded jumps (power cuts) and measured radar noise |
 
 The top bar is shared by all tabs: REAL/DEMO selector (Admin only; other users always see REAL), a single MQTT signal indicator (both systems share the HMI and broker; it turns green with the latest reading from either), the chart-date selector and the download buttons (Admin only, shown according to the active tab).
 
@@ -103,9 +103,9 @@ The switch-over time is read from the PM2 log. If it is not found, pass it with 
 
 Indicators are computed per silo from the fill % stored every 5 minutes, converted to tonnes with each system's model. Decreases count as consumption and increases as reception.
 
-- **Radar-noise filter:** 35-minute moving median, then hysteresis with an adaptive threshold per silo and per day (3σ of the measured noise, minimum `KPI_UMBRAL_TON` = 0.3 t). In simulation it keeps the error below 1.5 % with noise up to ±6 cm and spurious spikes.
+- **Radar-noise filter:** 35-minute moving median, then hysteresis with an adaptive threshold per silo and per day (3σ of the measured noise, minimum `KPI_UMBRAL_TON` = 0.3 t). In 30-day simulations the consumption and reception error stays below 3 % with radar noise up to ±6 cm plus spurious spikes.
 - **Refill:** a *gradual* rise of more than `KPI_RECARGA_MIN_TON` (2 t) — the level increases over at least `KPI_RECARGA_MIN_PASOS` (3) consecutive filter steps, i.e. ≥ 15 min rising. Any other rise (sudden, or under 2 t) is neither a refill nor a reception. If the level falls back afterwards (oscillation) or the rise was under 2 t (radar drift), the reference returns to the previous level so the later fall is not counted as consumption either. A sudden rise ≥ 2 t that persists (e.g. a refill made entirely during an outage) becomes the new reference level.
-- **Jumps (power cuts, sensor/HMI restarts):** if the fill % changes more than `KPI_SALTO_PCT` (10 points) per 5 minutes elapsed between two valid readings, the series is cut there and the jump is not counted as consumption or reception. If the level later returns close to its previous value, the false readings in between are discarded and both sides are joined, so real consumption during the outage is still counted. A real refill already in progress continues to count across a power cut. A refill that happens entirely while the system has no data is not counted (it appears only as a jump).
+- **Jumps (power cuts, sensor/HMI restarts):** if the fill % changes more than `KPI_SALTO_PCT` (10 points) per 5 minutes elapsed between two valid readings, the series is cut there and the jump is not counted as consumption or reception. If the level later returns close to its previous value, the false readings in between are discarded and both sides are joined, so real consumption during the outage is still counted. A real refill already in progress continues to count across a power cut. A refill that happens entirely while the system has no data is not counted as a refill or reception; the new level simply becomes the reference.
 - Readings of exactly 0 % or ≥ 99.5 % (a radar restarting reports distance 0; the product never reaches the antenna) are treated as "no data".
 - The **Saltos** column shows how many jumps were discarded per silo in 30 days.
 - Matriz silos use their current product assignment.
@@ -201,11 +201,11 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | Feature | Admin | Other users |
 |---|---|---|
 | Totalizadores, Silos Matriz, Silos Nitrato | ✔ | ✔ |
-| Indicadores tab | ✔ | — |
+| Indicadores tab | ✔ | ✔ |
 | REAL / DEMO selector | ✔ | — (always REAL) |
 | Excel / CSV downloads | ✔ | — |
 
-Restrictions are enforced on the server too: download and indicator routes return HTTP 403 for non-admin users.
+Restrictions are enforced on the server too: download routes return HTTP 403 for non-admin users.
 
 ---
 
@@ -258,7 +258,7 @@ scada-silos-bronces/
 | `/matriz/export-data` | `/nitrato/export-data` | Admin |
 | `/matriz/export-daily-summary` | `/nitrato/export-daily-summary` | Admin |
 | `/matriz/export-trend` | `/nitrato/export-trend` | Admin |
-| `/matriz/kpi` | `/nitrato/kpi` | Admin |
+| `/matriz/kpi` | `/nitrato/kpi` | Any logged-in user |
 
 The legacy routes `/export-data`, `/export-daily-summary` and `/export-trend` still work for Matriz.
 
