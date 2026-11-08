@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ARGOSS · Acceso</title>
 <style>
+  /* Logotipo ARGOSS: Orbitron 800 (incluida en el proyecto, public/fonts/) */
+  @font-face {
+    font-family: "Orbitron";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("fonts/orbitron-800.woff2") format("woff2");
+  }
   body {
     margin: 0;
     height: 100vh;
@@ -25,9 +33,11 @@
   }
   .card h1 {
     color: #f1f5f9;
-    font-size: 34px;
-    letter-spacing: 0.3em;
-    margin: 0 -0.3em 4px 0;
+    font-family: "Orbitron", Arial, sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 0.18em;
+    margin: 0 -0.18em 4px 0;
   }
   .card .tagline {
     color: #94a3b8;

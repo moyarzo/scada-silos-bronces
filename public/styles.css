@@ -1,3 +1,13 @@
+/* Fuente del logotipo ARGOSS: Orbitron 800 (SIL Open Font License, public/fonts/OFL-Orbitron.txt).
+   Incluida en el proyecto para no depender de Google Fonts (la red de planta puede bloquearlo). */
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("fonts/orbitron-800.woff2") format("woff2");
+}
+
 * {
   box-sizing: border-box;
 }
@@ -60,9 +70,11 @@ body {
 /* ===== MARCA ARGOSS (Automated Radar Gauging & Online Stock System) ===== */
 .header h1 .brand {
   display: block;
+  font-family: "Orbitron", "Consolas", monospace;
+  font-weight: 800;
   font-size: 1.15em;
-  letter-spacing: 0.32em;
-  margin-right: -0.32em;   /* compensa el espaciado de la última letra para centrar */
+  letter-spacing: 0.2em;
+  margin-right: -0.2em;    /* compensa el espaciado de la última letra para centrar */
   color: #0f172a;
 }
 
@@ -74,6 +86,7 @@ body {
 
 /* Versión + indicador ONLINE / OFFLINE, a la derecha de ARGOSS */
 .header h1 .brand-badges {
+  font-family: "Consolas", monospace;
   position: absolute;
   left: 100%;
   bottom: 0.35em;

@@ -59,7 +59,7 @@ The page has five tabs. ARGOSS opens on **Totalizadores**, and the active tab is
 | **Indicadores** (indicators) | Last 30 days from history: per product, today's consumption, daily average, 30-day consumption and receptions with number of refills; daily consumption vs. reception chart; per-silo daily consumption table with totals, refills, discarded jumps (power cuts) and measured radar noise |
 | **Eventos** (events) | Event log of the last 3 months: status cards (communications now, silos without data now, today's alarms, today's refills and, for Admin, today's logins), category filters with counts, date / severity / silo / user filters, search, table grouped by day with live updates. See [Event log](#event-log-libeventosjs) |
 
-The header shows the Enaex logo with the **plant name** below it (taken from `plantas.json` using `PLANTA_ID`, so each plant server shows its own), **ARGOSS** with the **version number** next to it (hover to see the Git commit) and its meaning, *Automated Radar Gauging & Online Stock System*. Next to the version, a **signal indicator** shows **ONLINE** (green) when Matriz or Nitrate received MQTT data in the last 5 minutes and **OFFLINE** (red) otherwise; both systems share the HMI and broker, and the time of the last reading appears when hovering over it. On the right, the current user and the **Cerrar sesión** (logout) button, with the list of connected users right below them (centered on phones). The browser tab title is "ARGOSS · <plant>".
+The header shows the Enaex logo with the **plant name** below it (taken from `plantas.json` using `PLANTA_ID`, so each plant server shows its own), **ARGOSS** in the **Orbitron** typeface (also used on the login page) with the **version number** next to it (hover to see the Git commit) and its meaning, *Automated Radar Gauging & Online Stock System*. Next to the version, a **signal indicator** shows **ONLINE** (green) when Matriz or Nitrate received MQTT data in the last 5 minutes and **OFFLINE** (red) otherwise; both systems share the HMI and broker, and the time of the last reading appears when hovering over it. On the right, the current user and the **Cerrar sesión** (logout) button, with the list of connected users right below them (centered on phones). The browser tab title is "ARGOSS · <plant>".
 
 The top bar is shared by all tabs: REAL/DEMO selector (Admin only; other users always see REAL), the **Fecha** (date) selector for the charts and the download buttons (Admin only, shown according to the active tab).
 
@@ -219,7 +219,7 @@ The user picks the plant, enters their credentials, and the form is sent to that
 1. Register `argoss.cl` and create DNS **A records** pointing to the VM's static IP: `@`, `www` and `lossauces`.
 2. Open ports **80** and **443** in the cloud firewall.
 3. Install Nginx and Certbot: `sudo apt install nginx certbot python3-certbot-nginx`
-4. Publish the portal (copies `public/login.html` and `plantas.json` to `/var/www/argoss`). Run it again whenever the login or the plant list changes:
+4. Publish the portal (copies `public/login.html`, `plantas.json` and the `public/fonts/` typeface to `/var/www/argoss`). Run it again whenever the login or the plant list changes:
 
    ```sh
    bash deploy/publicar-portal.sh
@@ -319,6 +319,7 @@ scada-silos-bronces/
 │   ├── nitrato.js            ← Nitrate frontend
 │   ├── kpi.js                ← Indicators tab
 │   ├── eventos.js            ← Events tab
+│   ├── fonts/                ← Orbitron (ARGOSS logotype), bundled so no external font service is needed (SIL Open Font License)
 │   ├── styles.css
 │   └── logo.png
 ├── docs/demo.gif             ← README walkthrough

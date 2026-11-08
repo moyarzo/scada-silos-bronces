@@ -167,6 +167,9 @@ app.get("/login.html", function (req, res) {
   res.sendFile(path.join(PUBLIC_DIR, "login.html"));
 });
 
+// Fuente del logotipo ARGOSS (Orbitron, incluida en el proyecto): la usa también el login
+app.use("/fonts", express.static(path.join(PUBLIC_DIR, "fonts")));
+
 // Lista de plantas para el selector del login. La planta de este servidor se marca "local"
 // para que su login se envíe aquí mismo (funciona también por IP, sin dominio).
 app.get("/plantas.json", function (req, res) {
