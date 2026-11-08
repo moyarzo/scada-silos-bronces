@@ -165,10 +165,9 @@
   }
   /* Selector de idioma del login (ES / EN) */
   .lang-switch {
-    position: absolute;
-    top: 10px;
-    right: 12px;
     display: flex;
+    justify-content: center;
+    margin-top: 14px;
     gap: 2px;
     font-size: 11px;
   }
@@ -201,10 +200,6 @@
 <body>
   <canvas id="radarBg" aria-hidden="true"></canvas>
   <div class="card">
-    <div class="lang-switch" role="group" aria-label="Idioma / Language">
-      <button type="button" data-lang="es" aria-pressed="true">ES</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
-    </div>
     <h1 aria-label="ARGOSS">ARG<span class="radar-letter"><span class="visually-hidden">O</span><svg class="radar-o" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle class="r-ring" cx="50" cy="50" r="44"/><circle class="r-thin" cx="50" cy="50" r="25"/><g class="r-sweep"><g class="r-green"><path d="M50 50L27.92 18.46A38.5 38.5 0 0 1 33.53 15.20Z" fill-opacity="0.069"/><path d="M50 50L33.35 15.29A38.5 38.5 0 0 1 39.42 12.98Z" fill-opacity="0.138"/><path d="M50 50L39.23 13.04A38.5 38.5 0 0 1 45.59 11.75Z" fill-opacity="0.206"/><path d="M50 50L45.39 11.78A38.5 38.5 0 0 1 51.88 11.55Z" fill-opacity="0.275"/><path d="M50 50L51.68 11.54A38.5 38.5 0 0 1 58.12 12.37Z" fill-opacity="0.344"/><path d="M50 50L57.92 12.32A38.5 38.5 0 0 1 64.14 14.19Z" fill-opacity="0.413"/><path d="M50 50L63.95 14.12A38.5 38.5 0 0 1 69.79 16.97Z" fill-opacity="0.481"/><path d="M50 50L69.61 16.87A38.5 38.5 0 0 1 74.90 20.64Z" fill-opacity="0.550"/></g><line class="r-needle" x1="50" y1="50" x2="74.75" y2="20.51"/></g><circle class="r-green" cx="57.8" cy="21.0" r="4"/><circle class="r-green" cx="33.1" cy="56.2" r="3" fill-opacity="0.5"/><circle class="r-hub" cx="50" cy="50" r="4.5"/></svg></span>SS</h1>
     <div class="tagline">Automated Radar Gauging &amp; Online Stock System</div>
     <div class="error" id="errorMsg" style="display:none;" data-i18n="Usuario o contraseña incorrectos">Usuario o contraseña incorrectos</div>
@@ -219,6 +214,10 @@
       <input type="password" name="password" placeholder="Contraseña" data-i18n-placeholder="Contraseña" autocomplete="current-password" required>
       <button type="submit" data-i18n="Ingresar">Ingresar</button>
     </form>
+    <div class="lang-switch" role="group" aria-label="Idioma / Language">
+      <button type="button" data-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
   </div>
 
   <script>

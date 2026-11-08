@@ -785,6 +785,16 @@ function render() {
 
 // ===== SOCKET EVENTS =====
 
+// Al conectar (o recargar la página) el servidor envía la última lectura conocida:
+// si tiene menos de 5 min, el indicador sigue en ONLINE sin esperar el próximo dato.
+socket.on("mqttLast", function (d) {
+  if (!d || !(d.ageMs < 300000)) return;
+  if (d.serverTime) lastMqttUpdate = d.serverTime;
+  mqttSignalOk = true;
+  lastMqttHeartbeat = Math.max(lastMqttHeartbeat, Date.now() - d.ageMs);
+  updateMqttStatus();
+});
+
 socket.on("nivel", function (data) {
   if (!data) return;
 

@@ -82,6 +82,10 @@ if (window.Chart) {
 
 window.scadaMqttStatus = (function () {
   const state = {};
+  const KEY = "argoss.senal";
+  // Último dato visto en esta pestaña (sobrevive a la recarga al cambiar Apariencia o Idioma)
+  let seed = null;
+  try { seed = JSON.parse(sessionStorage.getItem(KEY) || "null"); } catch (e) {}
 
   function render() {
     const el = document.getElementById("mqttStatus");
@@ -100,12 +104,22 @@ window.scadaMqttStatus = (function () {
       }
     });
 
+    if (lastBeat) {
+      try { sessionStorage.setItem(KEY, JSON.stringify({ beat: lastBeat, time: lastTime })); } catch (e) {}
+    } else if (seed && seed.beat && Date.now() - seed.beat < 300000) {
+      // Recién recargada: mientras llega el estado del servidor, se mantiene el último conocido
+      ok = true;
+      lastTime = seed.time || lastTime;
+    }
+
     // Indicador junto a la versión: ONLINE (verde) / OFFLINE (rojo); la hora del último dato en el tooltip
     el.textContent = ok ? "ONLINE" : "OFFLINE";
     el.classList.toggle("online", ok);
     el.classList.toggle("offline", !ok);
     el.title = t(ok ? "Recibiendo datos MQTT · último dato: {t}" : "Sin datos MQTT · último dato: {t}", { t: lastTime });
   }
+
+  render();
 
   return {
     update: function (system, ok, time, heartbeat) {

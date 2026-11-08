@@ -1,6 +1,6 @@
 {
   "name": "scada-silos-lb",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "ARGOSS (Automated Radar Gauging & Online Stock System): monitoreo de silos Matriz y Nitrato de Amonio con MQTT",
   "main": "server.js",
   "scripts": {

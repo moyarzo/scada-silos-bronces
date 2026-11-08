@@ -537,6 +537,15 @@ function render() {
 
 // ===== SOCKET EVENTS =====
 
+// Última lectura conocida al conectar (ver matriz.js): mantiene ONLINE al recargar
+socket.on("mqttLast", d => {
+  if (!d || !(d.ageMs < 300000)) return;
+  if (d.serverTime) lastMqttUpdate = d.serverTime;
+  mqttSignalOk      = true;
+  lastMqttHeartbeat = Math.max(lastMqttHeartbeat, Date.now() - d.ageMs);
+  updateMqttStatus();
+});
+
 socket.on("nivel", data => {
   if (!data) return;
   if (data.serverTime) lastMqttUpdate = data.serverTime;
