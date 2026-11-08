@@ -89,9 +89,11 @@ window.scadaMqttStatus = (function () {
       }
     });
 
-    el.textContent = ok
-      ? `🟢 MQTT Activo (${lastTime})`
-      : `🔴 Sin señal (${lastTime})`;
+    // Indicador junto a la versión: ONLINE (verde) / OFFLINE (rojo); la hora del último dato en el tooltip
+    el.textContent = ok ? "ONLINE" : "OFFLINE";
+    el.classList.toggle("online", ok);
+    el.classList.toggle("offline", !ok);
+    el.title = (ok ? "Recibiendo datos MQTT" : "Sin datos MQTT") + " · último dato: " + lastTime;
   }
 
   return {

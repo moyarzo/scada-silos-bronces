@@ -72,20 +72,39 @@ body {
   display: inline-block;
 }
 
-.header h1 .brand-version {
+/* Versión + indicador ONLINE / OFFLINE, a la derecha de ARGOSS */
+.header h1 .brand-badges {
   position: absolute;
   left: 100%;
   bottom: 0.35em;
   margin-left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.32em;
-  font-weight: 600;
   letter-spacing: 0.04em;
+}
+
+.header h1 .brand-version {
+  font-weight: 600;
   color: #64748b;
   background: #e2e8f0;
   border-radius: 4px;
   padding: 1px 5px;
   white-space: nowrap;
 }
+
+.header h1 .signal-badge {
+  font-weight: 700;
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.header h1 .signal-badge.online  { background: #16a34a; }
+.header h1 .signal-badge.offline { background: #dc2626; }
 
 .header h1 .brand-sub {
   display: block;
@@ -207,17 +226,6 @@ body {
   margin: 0 14px;
   cursor: pointer;
   white-space: nowrap;
-}
-
-.mqtt-status {
-  font-size: 16px;
-  font-weight: bold;
-  color: #334155;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 6px 12px;
-  text-align: center;
 }
 
 .chart-date-bar {
@@ -904,7 +912,6 @@ body[data-page="kpi"] .chart-date-bar {
     margin: 4px 8px;
   }
 
-  .mqtt-status,
   .export-btn {
     width: 100%;
   }
@@ -1332,4 +1339,14 @@ body[data-page="eventos"] .only-nitrato {
   text-align: center;
   color: #64748b;
   padding: 18px !important;
+}
+
+/* Celular: versión y señal una sobre otra, para no salirse de la pantalla */
+@media (max-width: 768px) {
+  .header h1 .brand-badges {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    bottom: 0.1em;
+  }
 }

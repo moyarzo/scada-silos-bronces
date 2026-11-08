@@ -14,7 +14,7 @@
       <div class="plant-name" id="plantName">Planta Los Sauces</div>
     </div>
     <!-- Versión: campo "version" de package.json (ver main.js) -->
-    <h1><span class="brand"><span class="brand-word">ARGOSS<span class="brand-version" id="appVersion"></span></span></span><span class="brand-sub">Automated Radar Gauging &amp; Online Stock System</span></h1>
+    <h1><span class="brand"><span class="brand-word">ARGOSS<span class="brand-badges"><span class="brand-version" id="appVersion"></span><span class="signal-badge offline" id="mqttStatus" title="Sin datos MQTT">OFFLINE</span></span></span></span><span class="brand-sub">Automated Radar Gauging &amp; Online Stock System</span></h1>
     <div class="session-bar">
       <span class="current-user" id="currentUser"></span>
       <span class="connected-users" id="connectedUsers">Conectados: --</span>
@@ -43,9 +43,8 @@
         Modo REAL
       </label>
     </div>
-    <div class="mqtt-status" id="mqttStatus">🔴 Sin señal (--:--:--)</div>
     <div class="chart-date-bar">
-      <label for="chartDateSelect">Día gráficos:</label>
+      <label for="chartDateSelect">Fecha:</label>
       <select id="chartDateSelect"></select>
     </div>
     <!-- Descargas: solo visibles para el usuario Admin (main.js); el servidor también las restringe -->
