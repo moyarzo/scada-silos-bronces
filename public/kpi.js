@@ -129,7 +129,7 @@ function renderCharts(products) {
         interaction: { mode: "index", intersect: false },
         plugins: {
           legend: { display: true, position: "top", align: "end",
-            labels: { boxWidth: 12, boxHeight: 12, color: "#334155", font: { size: 12 } } },
+            labels: { boxWidth: 12, boxHeight: 12, color: scadaColor("--text-2", "#334155"), font: { size: 12 } } },
           tooltip: {
             callbacks: {
               title: items => p.days[items[0].dataIndex],
@@ -139,9 +139,9 @@ function renderCharts(products) {
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: "#475569", font: { size: 10 }, autoSkip: true, maxRotation: 0, maxTicksLimit: window.innerWidth < 768 ? 6 : 15 } },
-          y: { beginAtZero: true, title: { display: true, text: "t", color: "#475569" },
-               grid: { color: "#e5e7eb" }, border: { display: false }, ticks: { color: "#475569" } }
+          x: { grid: { display: false }, ticks: { color: scadaColor("--chart-text", "#475569"), font: { size: 10 }, autoSkip: true, maxRotation: 0, maxTicksLimit: window.innerWidth < 768 ? 6 : 15 } },
+          y: { beginAtZero: true, title: { display: true, text: "t", color: scadaColor("--chart-text", "#475569") },
+               grid: { color: scadaColor("--chart-grid", "#e5e7eb") }, border: { display: false }, ticks: { color: scadaColor("--chart-text", "#475569") } }
         }
       }
     });

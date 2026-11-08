@@ -152,13 +152,13 @@ function createGauge(percent, color) {
   const progress      = (percent / 100) * circumference;
   return `
     <svg width="150" height="100" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
-      <path d="M20 75 A55 55 0 0 1 130 75" stroke="#e5e7eb" stroke-width="12" fill="none"></path>
+      <path d="M20 75 A55 55 0 0 1 130 75" stroke="${scadaColor("--gauge-track", "#e5e7eb")}" stroke-width="12" fill="none"></path>
       <path d="M20 75 A55 55 0 0 1 130 75" stroke="${color}" stroke-width="12" fill="none"
         stroke-dasharray="${circumference}" stroke-dashoffset="${circumference - progress}"
         style="transition:stroke-dashoffset 0.6s ease;"></path>
-      <text x="18" y="92" font-size="12">0%</text>
-      <text x="75" y="62" font-size="12" text-anchor="middle">50%</text>
-      <text x="112" y="92" font-size="12">100%</text>
+      <text x="18" y="92" font-size="12" fill="${scadaColor("--text-3", "#475569")}">0%</text>
+      <text x="75" y="62" font-size="12" text-anchor="middle" fill="${scadaColor("--text-3", "#475569")}">50%</text>
+      <text x="112" y="92" font-size="12" fill="${scadaColor("--text-3", "#475569")}">100%</text>
     </svg>
     <div class="gauge-value" style="color:${color}">${percent.toFixed(1)}%</div>`;
 }
@@ -231,7 +231,7 @@ const trendMarkerPlugin = {
       const x = point.x, y = point.y - 14;
       ctx.beginPath();
       ctx.arc(x, y, 9, 0, Math.PI * 2);
-      ctx.fillStyle = "#f8fafc"; ctx.fill();
+      ctx.fillStyle = scadaColor("--marker-bg", "#f8fafc"); ctx.fill();
       ctx.lineWidth = 1; ctx.strokeStyle = color; ctx.stroke();
       ctx.fillStyle = color;
       ctx.fillText(symbol, x, y + 0.5);
@@ -261,7 +261,7 @@ function initCharts() {
           fill: true,
           backgroundColor: PRODUCTS[product].color + "22",
           tension: 0.15, pointRadius: 0, pointHoverRadius: 4,
-          borderWidth: 3, borderColor: "#111827", spanGaps: false
+          borderWidth: 3, borderColor: scadaColor("--chart-line", "#111827"), spanGaps: false
         }]
       },
       options: {
@@ -283,13 +283,13 @@ function initCharts() {
             title: { display: true, text: "Hora" },
             min: 0, max: FIXED_DAY_LABELS.length - 1,
             ticks: { autoSkip: true, maxTicksLimit: window.innerWidth < 768 ? 7 : 13 },
-            grid:  { display: true, color: "#dbe2ea", lineWidth: 1 }
+            grid:  { display: true, color: scadaColor("--chart-grid-strong", "#dbe2ea"), lineWidth: 1 }
           },
           y: {
             min: 0, max: 500,
             title: { display: true, text: "Ton" },
             ticks: { stepSize: 50 },
-            grid:  { display: true, color: "#e5e7eb", lineWidth: 1 }
+            grid:  { display: true, color: scadaColor("--chart-grid", "#e5e7eb"), lineWidth: 1 }
           }
         }
       }
@@ -328,8 +328,8 @@ function updateMiniSiloCharts() {
       data: {
         labels: FIXED_DAY_LABELS,
         datasets: [{
-          data, borderColor: "#111827", borderWidth: 2, pointRadius: 0,
-          fill: true, backgroundColor: "rgba(17,24,39,0.08)", tension: 0.25, spanGaps: false
+          data, borderColor: scadaColor("--chart-line", "#111827"), borderWidth: 2, pointRadius: 0,
+          fill: true, backgroundColor: scadaColor("--chart-fill", "rgba(17, 24, 39, 0.08)"), tension: 0.25, spanGaps: false
         }]
       },
       options: {
@@ -351,7 +351,7 @@ function updateMiniSiloCharts() {
             grid: { display: true,
               color(ctx) {
                 const l = ctx.tick && ctx.tick.label;
-                return (l === "07:00" || l === "12:00" || l === "19:00") ? "#cbd5e1" : "#edf2f7";
+                return (l === "07:00" || l === "12:00" || l === "19:00") ? scadaColor("--chart-grid-strong", "#cbd5e1") : scadaColor("--chart-grid", "#edf2f7");
               },
               lineWidth(ctx) {
                 const l = ctx.tick && ctx.tick.label;
@@ -362,7 +362,7 @@ function updateMiniSiloCharts() {
           y: {
             display: true, min: 0, max: 100,
             ticks: { stepSize: 50, font: { size: 9 }, callback: v => v + "%" },
-            grid:  { display: true, color: "#e5e7eb", lineWidth: 1 }
+            grid:  { display: true, color: scadaColor("--chart-grid", "#e5e7eb"), lineWidth: 1 }
           }
         }
       }

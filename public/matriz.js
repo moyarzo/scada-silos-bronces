@@ -169,7 +169,7 @@ function createGauge(percent, color) {
   return `
     <svg width="150" height="100" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
       <path d="M20 75 A55 55 0 0 1 130 75"
-        stroke="#e5e7eb"
+        stroke="${scadaColor("--gauge-track", "#e5e7eb")}"
         stroke-width="12"
         fill="none"></path>
 
@@ -181,9 +181,9 @@ function createGauge(percent, color) {
         stroke-dashoffset="${circumference - progress}"
         style="transition: stroke-dashoffset 0.6s ease;"></path>
 
-      <text x="18" y="92" font-size="12">0%</text>
-      <text x="75" y="62" font-size="12" text-anchor="middle">50%</text>
-      <text x="112" y="92" font-size="12">100%</text>
+      <text x="18" y="92" font-size="12" fill="${scadaColor("--text-3", "#475569")}">0%</text>
+      <text x="75" y="62" font-size="12" text-anchor="middle" fill="${scadaColor("--text-3", "#475569")}">50%</text>
+      <text x="112" y="92" font-size="12" fill="${scadaColor("--text-3", "#475569")}">100%</text>
     </svg>
     <div class="gauge-value" style="color:${color}">${percent.toFixed(1)}%</div>
   `;
@@ -284,7 +284,7 @@ const trendMarkerPlugin = {
 
       ctx.beginPath();
       ctx.arc(x, y, 9, 0, Math.PI * 2);
-      ctx.fillStyle = "#f8fafc";
+      ctx.fillStyle = scadaColor("--marker-bg", "#f8fafc");
       ctx.fill();
       ctx.lineWidth = 1;
       ctx.strokeStyle = color;
@@ -336,7 +336,7 @@ function initCharts() {
           pointRadius: 0,
           pointHoverRadius: 4,
           borderWidth: 3,
-          borderColor: "#111827",
+          borderColor: scadaColor("--chart-line", "#111827"),
           spanGaps: false
         }]
       },
@@ -372,14 +372,14 @@ function initCharts() {
               autoSkip: true,
               maxTicksLimit: window.innerWidth < 768 ? 7 : 13
             },
-            grid: { display: true, color: "#dbe2ea", lineWidth: 1 }
+            grid: { display: true, color: scadaColor("--chart-grid-strong", "#dbe2ea"), lineWidth: 1 }
           },
           y: {
             min: yAxis.min,
             max: yAxis.max,
             title: { display: true, text: "Ton" },
             ticks: { stepSize: yAxis.stepSize },
-            grid: { display: true, color: "#e5e7eb", lineWidth: 1 }
+            grid: { display: true, color: scadaColor("--chart-grid", "#e5e7eb"), lineWidth: 1 }
           }
         }
       }
@@ -428,11 +428,11 @@ function updateMiniSiloCharts() {
         datasets: [{
           label: "% llenado",
           data: data,
-          borderColor: "#111827",
+          borderColor: scadaColor("--chart-line", "#111827"),
           borderWidth: 2,
           pointRadius: 0,
           fill: true,
-          backgroundColor: "rgba(17, 24, 39, 0.08)",
+          backgroundColor: scadaColor("--chart-fill", "rgba(17, 24, 39, 0.08)"),
           tension: 0.25,
           spanGaps: false
         }]
@@ -477,10 +477,10 @@ function updateMiniSiloCharts() {
                 const label = context.tick && context.tick.label;
 
                 if (label === "07:00" || label === "12:00" || label === "19:00") {
-                  return "#cbd5e1";
+                  return scadaColor("--chart-grid-strong", "#cbd5e1");
                 }
 
-                return "#edf2f7";
+                return scadaColor("--chart-grid", "#edf2f7");
               },
               lineWidth: function (context) {
                 const label = context.tick && context.tick.label;
@@ -506,7 +506,7 @@ function updateMiniSiloCharts() {
             },
             grid: {
               display: true,
-              color: "#e5e7eb",
+              color: scadaColor("--chart-grid", "#e5e7eb"),
               lineWidth: 1
             }
           }

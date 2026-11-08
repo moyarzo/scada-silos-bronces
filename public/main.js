@@ -65,6 +65,17 @@ window.addEventListener("hashchange", function () {
   });
 })();
 
+// ===== COLORES DEL TEMA (variables CSS de styles.css) =====
+// scadaColor("--chart-grid", "#e5e7eb") → valor de la variable, o el respaldo si no existe.
+window.scadaColor = function (name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+};
+if (window.Chart) {
+  Chart.defaults.color = scadaColor("--chart-text", "#666666");
+  Chart.defaults.borderColor = scadaColor("--chart-grid", "#e5e7eb");
+}
+
 // ===== ESTADO DE SEÑAL MQTT (único para Matriz y Nitrato) =====
 // matriz.js y nitrato.js reportan aquí su señal; se muestra un solo estado:
 // activo si cualquiera de los dos recibió datos recientemente, con la hora del último dato.
@@ -119,12 +130,12 @@ window.scadaTotals = (function () {
     const progress = (shown / 100) * circumference;
     return `
       <svg viewBox="0 0 160 96" class="cap-gauge-svg" aria-hidden="true">
-        <path d="M18 84 A62 62 0 0 1 142 84" stroke="#e5e7eb" stroke-width="14" fill="none"></path>
+        <path d="M18 84 A62 62 0 0 1 142 84" stroke="${scadaColor("--gauge-track", "#e5e7eb")}" stroke-width="14" fill="none"></path>
         <path d="M18 84 A62 62 0 0 1 142 84" stroke="${color}" stroke-width="14" fill="none"
           stroke-dasharray="${circumference}" stroke-dashoffset="${circumference - progress}"
           style="transition: stroke-dashoffset 0.6s ease;"></path>
-        <text x="14" y="96" font-size="11" fill="#64748b">0%</text>
-        <text x="146" y="96" font-size="11" fill="#64748b" text-anchor="end">100%</text>
+        <text x="14" y="96" font-size="11" fill="${scadaColor("--muted", "#64748b")}">0%</text>
+        <text x="146" y="96" font-size="11" fill="${scadaColor("--muted", "#64748b")}" text-anchor="end">100%</text>
       </svg>`;
   }
 
