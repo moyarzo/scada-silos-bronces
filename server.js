@@ -222,14 +222,46 @@ app.get("/logout", function (req, res) {
 });
 
 // El propio frontend puede pedir quién está logueado
+// ===== PREFERENCIAS DE USUARIO (botón ⚙: apariencia e idioma) =====
+// Se guardan por usuario en userPrefs.json (no está en Git). Por defecto: tema oscuro, español.
+const PREFS_FILE = path.join(__dirname, "userPrefs.json");
+const PREF_DEFAULTS = { tema: "oscuro", idioma: "es" };
+const PREF_VALUES = { tema: ["oscuro", "claro"], idioma: ["es", "en"] };
+
+function readPrefsFile() {
+  try { return JSON.parse(require("fs").readFileSync(PREFS_FILE, "utf8")) || {}; } catch (e) { return {}; }
+}
+
+function prefsFor(user) {
+  return Object.assign({}, PREF_DEFAULTS, readPrefsFile()[user] || {});
+}
+
 app.get("/whoami", requireAuth, function (req, res) {
   res.json({
     user: req.session.user,
     isAdmin: isAdmin(req.session.user),
     planta: plantaNombre(),
     version: APP_VERSION,
-    commit: APP_COMMIT
+    commit: APP_COMMIT,
+    prefs: prefsFor(req.session.user)
   });
+});
+
+app.post("/preferencias", requireAuth, function (req, res) {
+  var all = readPrefsFile();
+  var mine = Object.assign({}, PREF_DEFAULTS, all[req.session.user] || {});
+  Object.keys(PREF_VALUES).forEach(function (k) {
+    var v = req.body && req.body[k];
+    if (PREF_VALUES[k].indexOf(v) >= 0) mine[k] = v;
+  });
+  all[req.session.user] = mine;
+  try {
+    require("fs").writeFileSync(PREFS_FILE, JSON.stringify(all, null, 2));
+  } catch (e) {
+    console.error("No se pudieron guardar las preferencias:", e.message);
+    return res.status(500).json({ ok: false });
+  }
+  res.json({ ok: true, prefs: mine });
 });
 
 // ===== SOCKET.IO — sesión compartida en todos los namespaces =====

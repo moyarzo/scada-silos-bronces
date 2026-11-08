@@ -104,7 +104,7 @@ window.scadaMqttStatus = (function () {
     el.textContent = ok ? "ONLINE" : "OFFLINE";
     el.classList.toggle("online", ok);
     el.classList.toggle("offline", !ok);
-    el.title = (ok ? "Recibiendo datos MQTT" : "Sin datos MQTT") + " · último dato: " + lastTime;
+    el.title = t(ok ? "Recibiendo datos MQTT · último dato: {t}" : "Sin datos MQTT · último dato: {t}", { t: lastTime });
   }
 
   return {
@@ -202,7 +202,8 @@ window.scadaTotals = (function () {
 fetch("/whoami")
   .then(function (res) { return res.json(); })
   .then(function (data) {
-    document.getElementById("currentUser").innerText = "Usuario: " + data.user;
+    document.getElementById("currentUser").innerText = t("Usuario: {u}", { u: data.user });
+    if (data.prefs) syncPrefs(data.prefs);
 
     // Planta bajo el logo, pestaña del navegador y versión junto a ARGOSS
     if (data.planta) {
@@ -239,5 +240,85 @@ document.querySelectorAll('input[name="mode"]').forEach(function (radio) {
 // Lista de usuarios conectados en tiempo real, emitida por el servidor.
 socket.on("connectedUsers", function (users) {
   document.getElementById("connectedUsers").innerText =
-    "Conectados: " + users.join(", ");
+    t("Conectados: {l}", { l: users.join(", ") });
 });
+
+// ===== CONFIGURACIÓN DE USUARIO (botón ⚙): apariencia e idioma =====
+// Se guarda por usuario en el servidor (POST /preferencias) y en este navegador (i18n.js la aplica
+// al cargar). Al cambiar algo la página se recarga para aplicar colores de gráficos y textos.
+
+const PREF_KEYS = { tema: "argoss.tema", idioma: "argoss.idioma" };
+
+function readLocalPref(key, fallback) {
+  try { return localStorage.getItem(PREF_KEYS[key]) || fallback; } catch (e) { return fallback; }
+}
+
+function writeLocalPref(key, value) {
+  try { localStorage.setItem(PREF_KEYS[key], value); } catch (e) {}
+}
+
+function currentPrefs() {
+  return { tema: readLocalPref("tema", "oscuro"), idioma: readLocalPref("idioma", "es") };
+}
+
+function markPrefs(prefs) {
+  document.querySelectorAll("#settingsPanel .segmented").forEach(function (group) {
+    const key = group.getAttribute("data-pref");
+    group.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-value") === prefs[key]));
+    });
+  });
+}
+
+// Preferencias del servidor (las de este usuario en cualquier equipo): si difieren de las del
+// navegador, se copian y se recarga una vez para aplicarlas.
+function syncPrefs(serverPrefs) {
+  const local = currentPrefs();
+  let changed = false;
+  Object.keys(PREF_KEYS).forEach(function (k) {
+    if (serverPrefs[k] && serverPrefs[k] !== local[k]) { writeLocalPref(k, serverPrefs[k]); changed = true; }
+  });
+  if (changed) window.location.reload();
+  else markPrefs(local);
+}
+
+(function setupSettings() {
+  const btn = document.getElementById("settingsBtn");
+  const panel = document.getElementById("settingsPanel");
+  if (!btn || !panel) return;
+
+  function open(show) {
+    panel.hidden = !show;
+    btn.setAttribute("aria-expanded", String(show));
+    if (show) markPrefs(currentPrefs());
+  }
+
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    open(panel.hidden);
+  });
+  panel.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("click", function () { if (!panel.hidden) open(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !panel.hidden) { open(false); btn.focus(); }
+  });
+
+  panel.querySelectorAll(".segmented button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      const key = b.parentElement.getAttribute("data-pref");
+      const value = b.getAttribute("data-value");
+      if (currentPrefs()[key] === value) return;
+      writeLocalPref(key, value);
+      markPrefs(currentPrefs());
+      const body = {}; body[key] = value;
+      fetch("/preferencias", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+        .catch(function () {})
+        .then(function () { window.location.reload(); });
+    });
+  });
+
+  markPrefs(currentPrefs());
+})();
+
+// Textos fijos de la página en el idioma elegido
+applyI18n();

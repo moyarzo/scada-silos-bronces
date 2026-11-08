@@ -19,3 +19,6 @@ nitrato_recalculo.json
 # Bitácora de eventos (pestaña Eventos)
 eventos/
 backups/
+
+# Preferencias de usuario (tema e idioma)
+userPrefs.json
