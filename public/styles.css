@@ -273,10 +273,8 @@ body {
   top: 50%;
   transform: translateY(-50%);
   display: grid;
-  grid-template-columns: 1fr auto auto;   /* usuario · ⚙ · Cerrar sesión */
-  grid-template-areas:
-    "user   gear   logout"
-    "online online online";
+  grid-template-columns: auto auto;        /* usuario · ⚙ (Cerrar sesión va dentro del panel) */
+  grid-template-areas: "user gear";
   align-items: center;
   justify-items: end;
   gap: 6px 10px;
@@ -1534,7 +1532,9 @@ body[data-page="eventos"] .only-nitrato {
   top: calc(100% + 8px);
   right: 0;
   z-index: 50;
-  width: 270px;
+  width: 300px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1597,9 +1597,82 @@ body[data-page="eventos"] .only-nitrato {
   font-weight: bold;
 }
 
-.settings-note {
+.settings-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* Modo de datos (REAL / DEMO): las mismas radios de antes, con aspecto de botones segmentados */
+.settings-panel .mode-selector {
+  font-size: 13px;
+  text-align: center;
+}
+
+.settings-panel .mode-selector label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 8px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.settings-panel .mode-selector label + label {
+  border-left: 1px solid var(--border);
+}
+
+.settings-panel .mode-selector input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-panel .mode-selector label:has(input:checked) {
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.settings-panel .mode-selector label:has(input:focus-visible) {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+.settings-downloads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.settings-downloads .export-btn {
+  margin: 0;
+  padding: 8px 6px;
   font-size: 12px;
-  color: var(--muted);
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.settings-panel .settings-logout {
+  display: block;
+  text-align: center;
+  padding: 8px 10px;
+  border: 1px solid var(--danger-text);
+  border-radius: 8px;
+  color: var(--danger-text);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.settings-panel .settings-logout:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
 }
 
 @media (max-width: 768px) {
@@ -1608,4 +1681,10 @@ body[data-page="eventos"] .only-nitrato {
     left: 50%;
     transform: translateX(-50%);
   }
+}
+
+/* Barra superior: solo queda el selector de fecha; en Indicadores y Eventos no hay nada que mostrar */
+body[data-page="kpi"] .mode-bar,
+body[data-page="eventos"] .mode-bar {
+  display: none;
 }

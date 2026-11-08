@@ -238,10 +238,7 @@ document.querySelectorAll('input[name="mode"]').forEach(function (radio) {
 });
 
 // Lista de usuarios conectados en tiempo real, emitida por el servidor.
-socket.on("connectedUsers", function (users) {
-  document.getElementById("connectedUsers").innerText =
-    t("Conectados: {l}", { l: users.join(", ") });
-});
+// (La lista de usuarios conectados ya no se muestra en la cabecera: las conexiones quedan en Eventos)
 
 // ===== CONFIGURACIÓN DE USUARIO (botón ⚙): apariencia e idioma =====
 // Se guarda por usuario en el servidor (POST /preferencias) y en este navegador (i18n.js la aplica

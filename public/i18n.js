@@ -44,6 +44,8 @@
       "Modo DEMO": "DEMO mode",
       "Modo REAL": "LIVE mode",
       "Fecha:": "Date:",
+      "Modo de datos": "Data mode",
+      "Descargas": "Downloads",
       "Excel diario Matriz": "Daily Excel · Matrix",
       "Historial 30 días Matriz": "30-day history · Matrix",
       "Excel diario Nitrato": "Daily Excel · Nitrate",
