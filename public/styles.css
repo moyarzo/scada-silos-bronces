@@ -76,6 +76,55 @@ body {
   letter-spacing: 0.2em;
   margin-right: -0.2em;    /* compensa el espaciado de la última letra para centrar */
   color: #0f172a;
+  --radar-gap: 0.2em;
+}
+
+/* ===== O de radar del logotipo ARGOSS =====
+   SVG en lugar de la letra O: anillo (color del texto), anillo interior, barrido con estela que gira
+   lentamente (una vuelta cada 4 s) y dos "ecos". Sin giro si el equipo pide reducir animaciones. */
+.radar-letter {
+  position: relative;
+  display: inline-block;
+  letter-spacing: 0;
+}
+
+.radar-o {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  vertical-align: -0.035em;
+  margin: 0 var(--radar-gap, 0.2em) 0 0.03em;   /* --radar-gap = espaciado entre letras */
+  overflow: visible;
+}
+
+.radar-o .r-ring   { fill: none; stroke: currentColor; stroke-width: 11; }
+.radar-o .r-thin   { fill: none; stroke: var(--radar-thin, #94a3b8); stroke-width: 2.5; }
+.radar-o .r-green  { fill: var(--radar-green, #16a34a); }
+.radar-o .r-needle { stroke: var(--radar-green, #16a34a); stroke-width: 4; stroke-linecap: round; }
+.radar-o .r-hub    { fill: currentColor; }
+
+.radar-o .r-sweep {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  animation: radar-sweep 4s linear infinite;
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-o .r-sweep { animation: none; }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Número de versión junto a ARGOSS (no desplaza el centrado del título) */
