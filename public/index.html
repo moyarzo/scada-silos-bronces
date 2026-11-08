@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARGOSS · Los Sauces</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Tema e idioma guardados: se aplican antes de pintar la página -->
+  <script src="i18n.js"></script>
 </head>
 <body data-page="totales">
   <div class="header">
@@ -17,46 +19,70 @@
     <h1><span class="brand"><span class="brand-word" aria-label="ARGOSS">ARG<span class="radar-letter"><span class="visually-hidden">O</span><svg class="radar-o" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle class="r-ring" cx="50" cy="50" r="44"/><circle class="r-thin" cx="50" cy="50" r="25"/><g class="r-sweep"><g class="r-green"><path d="M50 50L27.92 18.46A38.5 38.5 0 0 1 33.53 15.20Z" fill-opacity="0.069"/><path d="M50 50L33.35 15.29A38.5 38.5 0 0 1 39.42 12.98Z" fill-opacity="0.138"/><path d="M50 50L39.23 13.04A38.5 38.5 0 0 1 45.59 11.75Z" fill-opacity="0.206"/><path d="M50 50L45.39 11.78A38.5 38.5 0 0 1 51.88 11.55Z" fill-opacity="0.275"/><path d="M50 50L51.68 11.54A38.5 38.5 0 0 1 58.12 12.37Z" fill-opacity="0.344"/><path d="M50 50L57.92 12.32A38.5 38.5 0 0 1 64.14 14.19Z" fill-opacity="0.413"/><path d="M50 50L63.95 14.12A38.5 38.5 0 0 1 69.79 16.97Z" fill-opacity="0.481"/><path d="M50 50L69.61 16.87A38.5 38.5 0 0 1 74.90 20.64Z" fill-opacity="0.550"/></g><line class="r-needle" x1="50" y1="50" x2="74.75" y2="20.51"/></g><circle class="r-green" cx="57.8" cy="21.0" r="4"/><circle class="r-green" cx="33.1" cy="56.2" r="3" fill-opacity="0.5"/><circle class="r-hub" cx="50" cy="50" r="4.5"/></svg></span>SS<span class="brand-badges"><span class="brand-version" id="appVersion"></span><span class="signal-badge offline" id="mqttStatus" title="Sin datos MQTT">OFFLINE</span></span></span></span><span class="brand-sub">Automated Radar Gauging &amp; Online Stock System</span></h1>
     <div class="session-bar">
       <span class="current-user" id="currentUser"></span>
-      <span class="connected-users" id="connectedUsers">Conectados: --</span>
-      <a href="/logout">Cerrar sesión</a>
+      <button type="button" class="settings-btn" id="settingsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsPanel" data-i18n-aria="Configuración" data-i18n-title="Configuración" title="Configuración" aria-label="Configuración"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+
+      <!-- Panel de configuración del usuario (main.js) -->
+      <div class="settings-panel" id="settingsPanel" role="dialog" aria-labelledby="settingsTitle" hidden>
+        <div class="settings-title" id="settingsTitle" data-i18n="Configuración">Configuración</div>
+        <div class="settings-group">
+          <span class="settings-label" data-i18n="Apariencia">Apariencia</span>
+          <div class="segmented" role="group" data-pref="tema">
+            <button type="button" data-value="oscuro" data-i18n="Oscuro">Oscuro</button>
+            <button type="button" data-value="claro" data-i18n="Claro">Claro</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <span class="settings-label" data-i18n="Idioma">Idioma</span>
+          <div class="segmented" role="group" data-pref="idioma">
+            <button type="button" data-value="es">Español</button>
+            <button type="button" data-value="en">English</button>
+          </div>
+        </div>
+
+        <!-- Solo Admin: modo de datos y descargas (el servidor también restringe las descargas) -->
+        <div class="settings-admin admin-only" hidden>
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="Modo de datos">Modo de datos</span>
+            <div class="mode-selector segmented" role="radiogroup">
+              <label><input type="radio" name="mode" value="real" checked><span data-i18n="Modo REAL">Modo REAL</span></label>
+              <label><input type="radio" name="mode" value="demo"><span data-i18n="Modo DEMO">Modo DEMO</span></label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="Descargas">Descargas</span>
+            <div class="settings-downloads">
+              <button type="button" id="exportBtnMatriz" class="export-btn" data-i18n="Excel diario Matriz">Excel diario Matriz</button>
+              <button type="button" id="exportTrendBtnMatriz" class="export-btn" data-i18n="Historial 30 días Matriz">Historial 30 días Matriz</button>
+              <button type="button" id="exportBtnNitrato" class="export-btn export-btn-nitrato" data-i18n="Excel diario Nitrato">Excel diario Nitrato</button>
+              <button type="button" id="exportTrendBtnNitrato" class="export-btn export-btn-nitrato" data-i18n="Historial 30 días Nitrato">Historial 30 días Nitrato</button>
+            </div>
+          </div>
+        </div>
+
+        <a class="settings-logout" href="/logout" data-i18n="Cerrar sesión">Cerrar sesión</a>
+      </div>
     </div>
   </div>
 
   <!-- ===== SELECTOR DE SUBPÁGINAS ===== -->
   <nav class="page-tabs" role="tablist">
-    <button class="page-tab" role="tab" data-page="totales">Totalizadores</button>
-    <button class="page-tab" role="tab" data-page="matriz">Silos Matriz</button>
-    <button class="page-tab" role="tab" data-page="nitrato">Silos Nitrato</button>
-    <button class="page-tab" role="tab" data-page="kpi">Indicadores</button>
-    <button class="page-tab" role="tab" data-page="eventos">Eventos</button>
+    <button class="page-tab" role="tab" data-page="totales" data-i18n="Totalizadores">Totalizadores</button>
+    <button class="page-tab" role="tab" data-page="matriz" data-i18n="Silos Matriz">Silos Matriz</button>
+    <button class="page-tab" role="tab" data-page="nitrato" data-i18n="Silos Nitrato">Silos Nitrato</button>
+    <button class="page-tab" role="tab" data-page="kpi" data-i18n="Indicadores">Indicadores</button>
+    <button class="page-tab" role="tab" data-page="eventos" data-i18n="Eventos">Eventos</button>
   </nav>
 
   <div class="mode-bar">
-    <!-- Selector DEMO / REAL: solo visible para el usuario Admin (los demás usuarios siempre ven modo REAL) -->
-    <div class="mode-selector admin-only" hidden>
-      <label>
-        <input type="radio" name="mode" value="demo">
-        Modo DEMO
-      </label>
-      <label>
-        <input type="radio" name="mode" value="real" checked>
-        Modo REAL
-      </label>
-    </div>
     <div class="chart-date-bar">
-      <label for="chartDateSelect">Fecha:</label>
+      <label for="chartDateSelect" data-i18n="Fecha:">Fecha:</label>
       <select id="chartDateSelect"></select>
     </div>
-    <!-- Descargas: solo visibles para el usuario Admin (main.js); el servidor también las restringe -->
-    <button id="exportBtnMatriz" class="export-btn admin-only only-matriz" hidden>Excel diario Matriz</button>
-    <button id="exportTrendBtnMatriz" class="export-btn admin-only only-matriz" hidden>Historial 30 días Matriz</button>
-    <button id="exportBtnNitrato" class="export-btn export-btn-nitrato admin-only only-nitrato" hidden>Excel diario Nitrato</button>
-    <button id="exportTrendBtnNitrato" class="export-btn export-btn-nitrato admin-only only-nitrato" hidden>Historial 30 días Nitrato</button>
   </div>
 
   <!-- ===== PÁGINA 1: GRÁFICOS TOTALIZADORES (principal) ===== -->
   <section class="page" id="page-totales" data-page="totales">
-    <h2 class="page-title">Totalizadores</h2>
+    <h2 class="page-title" data-i18n="Totalizadores">Totalizadores</h2>
     <div class="totals-panel">
       <div class="top-panel" id="topPanelMatriz"></div>
       <div class="top-panel" id="topPanelNitrato"></div>
@@ -65,19 +91,19 @@
 
   <!-- ===== PÁGINA 2: SILOS MATRIZ ===== -->
   <section class="page" id="page-matriz" data-page="matriz">
-    <h2 class="page-title">Silos Matriz</h2>
+    <h2 class="page-title" data-i18n="Silos Matriz">Silos Matriz</h2>
     <div class="grid" id="gridMatriz"></div>
   </section>
 
   <!-- ===== PÁGINA 3: SILOS NITRATO ===== -->
   <section class="page" id="page-nitrato" data-page="nitrato">
-    <h2 class="page-title page-title-nitrato">Silos Nitrato de Amonio</h2>
+    <h2 class="page-title page-title-nitrato" data-i18n="Silos Nitrato de Amonio">Silos Nitrato de Amonio</h2>
     <div class="grid" id="gridNitrato"></div>
   </section>
 
   <!-- ===== PÁGINA 4: INDICADORES (KPI) ===== -->
   <section class="page" id="page-kpi" data-page="kpi">
-    <h2 class="page-title">Indicadores · últimos 30 días</h2>
+    <h2 class="page-title" data-i18n="Indicadores · últimos 30 días">Indicadores · últimos 30 días</h2>
     <div id="kpiContent">
       <div class="kpi-tiles" id="kpiTiles"></div>
       <div class="kpi-charts" id="kpiCharts"></div>
@@ -91,23 +117,23 @@
   <!-- ===== PÁGINA 5: EVENTOS (bitácora) ===== -->
   <!-- Admin ve todas las categorías; los demás usuarios solo Comunicaciones y Proceso (el servidor también lo restringe) -->
   <section class="page" id="page-eventos" data-page="eventos">
-    <h2 class="page-title">Eventos · últimos 3 meses</h2>
+    <h2 class="page-title" data-i18n="Eventos · últimos 3 meses">Eventos · últimos 3 meses</h2>
     <div class="ev-tiles" id="evTiles"></div>
     <div class="panel-card ev-card">
       <div class="ev-filters">
         <div class="ev-chips" id="evChips"></div>
         <div class="ev-controls">
-          <label>Desde <input type="date" id="evFrom"></label>
-          <label>Hasta <input type="date" id="evTo"></label>
-          <select id="evSev" aria-label="Severidad">
-            <option value="">Toda severidad</option>
-            <option value="alarma">Alarma</option>
-            <option value="aviso">Aviso</option>
+          <label><span data-i18n="Desde">Desde</span> <input type="date" id="evFrom"></label>
+          <label><span data-i18n="Hasta">Hasta</span> <input type="date" id="evTo"></label>
+          <select id="evSev" aria-label="Severidad" data-i18n-aria="Severidad">
+            <option value="" data-i18n="Toda severidad">Toda severidad</option>
+            <option value="alarma" data-i18n="Alarma">Alarma</option>
+            <option value="aviso" data-i18n="Aviso">Aviso</option>
             <option value="info">Info</option>
           </select>
-          <select id="evSilo" aria-label="Silo"><option value="">Todos los silos</option></select>
-          <select id="evUser" class="admin-only" aria-label="Usuario" hidden><option value="">Todos los usuarios</option></select>
-          <input type="search" id="evSearch" placeholder="Buscar…" aria-label="Buscar">
+          <select id="evSilo" aria-label="Silo"><option value="" data-i18n="Todos los silos">Todos los silos</option></select>
+          <select id="evUser" class="admin-only" aria-label="Usuario" hidden><option value="" data-i18n="Todos los usuarios">Todos los usuarios</option></select>
+          <input type="search" id="evSearch" placeholder="Buscar…" aria-label="Buscar" data-i18n-placeholder="Buscar…" data-i18n-aria="Buscar">
           <button class="export-btn admin-only" id="evExcel" hidden>Excel</button>
           <button class="export-btn admin-only" id="evCsv" hidden>CSV</button>
         </div>

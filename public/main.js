@@ -104,7 +104,7 @@ window.scadaMqttStatus = (function () {
     el.textContent = ok ? "ONLINE" : "OFFLINE";
     el.classList.toggle("online", ok);
     el.classList.toggle("offline", !ok);
-    el.title = (ok ? "Recibiendo datos MQTT" : "Sin datos MQTT") + " · último dato: " + lastTime;
+    el.title = t(ok ? "Recibiendo datos MQTT · último dato: {t}" : "Sin datos MQTT · último dato: {t}", { t: lastTime });
   }
 
   return {
@@ -147,20 +147,20 @@ window.scadaTotals = (function () {
 
     let rows;
     if (opts.isDemo) {
-      rows = `<tr><td colspan="2" class="shift-empty">Modo demo: sin registro de turno</td></tr>`;
+      rows = `<tr><td colspan="2" class="shift-empty">${t("Modo demo: sin registro de turno")}</td></tr>`;
     } else {
-      let variation = null, variationLabel = "Variación turno";
+      let variation = null, variationLabel = t("Variación turno");
       if (opts.start != null && opts.end != null) {
         variation = opts.end - opts.start;
       } else if (opts.start != null && opts.isToday) {
         variation = opts.total - opts.start;
-        variationLabel = "Variación (en curso)";
+        variationLabel = t("Variación (en curso)");
       }
       const varClass = variation == null ? "" : (variation > 0 ? "var-pos" : variation < 0 ? "var-neg" : "");
       const varText = variation == null ? "—" : (variation > 0 ? "+" : "") + variation.toFixed(1) + " t";
       rows = `
-        <tr><td>Inicio turno (07:00)</td><td>${fmt(opts.start)}</td></tr>
-        <tr><td>Cierre turno (19:00)</td><td>${fmt(opts.end)}</td></tr>
+        <tr><td>${t("Inicio turno (07:00)")}</td><td>${fmt(opts.start)}</td></tr>
+        <tr><td>${t("Cierre turno (19:00)")}</td><td>${fmt(opts.end)}</td></tr>
         <tr class="shift-var"><td>${variationLabel}</td><td class="${varClass}">${varText}</td></tr>`;
     }
 
@@ -169,7 +169,7 @@ window.scadaTotals = (function () {
       const percent = (opts.total / opts.capacity) * 100;
       gauge = `
         <div class="cap-gauge">
-          <div class="cap-gauge-title">Capacidad planta</div>
+          <div class="cap-gauge-title">${t("Capacidad planta")}</div>
           ${capacityGauge(percent, opts.color)}
           <div class="cap-gauge-value" style="color:${opts.color}">${percent.toFixed(1)}%</div>
           <div class="cap-gauge-detail">${opts.total.toFixed(1)} / ${opts.capacity} t</div>
@@ -177,15 +177,15 @@ window.scadaTotals = (function () {
     } else {
       gauge = `
         <div class="cap-gauge">
-          <div class="cap-gauge-title">Capacidad planta</div>
-          <div class="cap-gauge-detail">Sin capacidad definida</div>
+          <div class="cap-gauge-title">${t("Capacidad planta")}</div>
+          <div class="cap-gauge-detail">${t("Sin capacidad definida")}</div>
         </div>`;
     }
 
     el.innerHTML = `
       <div class="shift-table-wrap">
         <table class="shift-table">
-          <thead><tr><th colspan="2" style="border-color:${opts.color}">Registro de turno</th></tr></thead>
+          <thead><tr><th colspan="2" style="border-color:${opts.color}">${t("Registro de turno")}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -197,12 +197,21 @@ window.scadaTotals = (function () {
 
 // ===== SESIÓN =====
 
+// Ícono de usuario (silueta), toma el color del texto
+const USER_ICON = '<svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+  '<circle cx="12" cy="7.2" r="4.2" fill="currentColor"/>' +
+  '<path d="M3.5 21.5a8.5 8.5 0 0 1 17 0z" fill="currentColor"/></svg>';
+
 // Quién soy (usa la cookie de sesión ya activa).
 // Los botones de descarga (Excel / historial) solo se muestran al usuario Admin.
 fetch("/whoami")
   .then(function (res) { return res.json(); })
   .then(function (data) {
-    document.getElementById("currentUser").innerText = "Usuario: " + data.user;
+    const userEl = document.getElementById("currentUser");
+    userEl.innerHTML = USER_ICON + '<span class="current-user-name"></span>';
+    userEl.querySelector(".current-user-name").textContent = data.user;
+    userEl.title = t("Usuario") + ": " + data.user;
+    if (data.prefs) syncPrefs(data.prefs);
 
     // Planta bajo el logo, pestaña del navegador y versión junto a ARGOSS
     if (data.planta) {
@@ -237,7 +246,84 @@ document.querySelectorAll('input[name="mode"]').forEach(function (radio) {
 });
 
 // Lista de usuarios conectados en tiempo real, emitida por el servidor.
-socket.on("connectedUsers", function (users) {
-  document.getElementById("connectedUsers").innerText =
-    "Conectados: " + users.join(", ");
-});
+// (La lista de usuarios conectados ya no se muestra en la cabecera: las conexiones quedan en Eventos)
+
+// ===== CONFIGURACIÓN DE USUARIO (botón ⚙): apariencia e idioma =====
+// Se guarda por usuario en el servidor (POST /preferencias) y en este navegador (i18n.js la aplica
+// al cargar). Al cambiar algo la página se recarga para aplicar colores de gráficos y textos.
+
+const PREF_KEYS = { tema: "argoss.tema", idioma: "argoss.idioma" };
+
+function readLocalPref(key, fallback) {
+  try { return localStorage.getItem(PREF_KEYS[key]) || fallback; } catch (e) { return fallback; }
+}
+
+function writeLocalPref(key, value) {
+  try { localStorage.setItem(PREF_KEYS[key], value); } catch (e) {}
+}
+
+function currentPrefs() {
+  return { tema: readLocalPref("tema", "oscuro"), idioma: readLocalPref("idioma", "es") };
+}
+
+function markPrefs(prefs) {
+  document.querySelectorAll("#settingsPanel .segmented").forEach(function (group) {
+    const key = group.getAttribute("data-pref");
+    group.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-value") === prefs[key]));
+    });
+  });
+}
+
+// Preferencias del servidor (las de este usuario en cualquier equipo): si difieren de las del
+// navegador, se copian y se recarga una vez para aplicarlas.
+function syncPrefs(serverPrefs) {
+  const local = currentPrefs();
+  let changed = false;
+  Object.keys(PREF_KEYS).forEach(function (k) {
+    if (serverPrefs[k] && serverPrefs[k] !== local[k]) { writeLocalPref(k, serverPrefs[k]); changed = true; }
+  });
+  if (changed) window.location.reload();
+  else markPrefs(local);
+}
+
+(function setupSettings() {
+  const btn = document.getElementById("settingsBtn");
+  const panel = document.getElementById("settingsPanel");
+  if (!btn || !panel) return;
+
+  function open(show) {
+    panel.hidden = !show;
+    btn.setAttribute("aria-expanded", String(show));
+    if (show) markPrefs(currentPrefs());
+  }
+
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    open(panel.hidden);
+  });
+  panel.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("click", function () { if (!panel.hidden) open(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !panel.hidden) { open(false); btn.focus(); }
+  });
+
+  panel.querySelectorAll(".segmented button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      const key = b.parentElement.getAttribute("data-pref");
+      const value = b.getAttribute("data-value");
+      if (currentPrefs()[key] === value) return;
+      writeLocalPref(key, value);
+      markPrefs(currentPrefs());
+      const body = {}; body[key] = value;
+      fetch("/preferencias", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+        .catch(function () {})
+        .then(function () { window.location.reload(); });
+    });
+  });
+
+  markPrefs(currentPrefs());
+})();
+
+// Textos fijos de la página en el idioma elegido
+applyI18n();

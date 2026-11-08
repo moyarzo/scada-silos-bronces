@@ -5,8 +5,8 @@
 
 (function () {
 
-const CAT_NAME = { usuarios: "Usuarios", comunicaciones: "Comunicaciones", proceso: "Proceso", operacion: "Operación" };
-const SEV_NAME = { info: "Info", aviso: "Aviso", alarma: "Alarma" };
+const CAT_NAME = { usuarios: t("Usuarios"), comunicaciones: t("Comunicaciones"), proceso: t("Proceso"), operacion: t("Operación") };
+const SEV_NAME = { info: t("Info"), aviso: t("Aviso"), alarma: t("Alarma") };
 const PAGE_SIZE = 50;
 
 let cat = "";
@@ -20,16 +20,16 @@ const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, "0");
 const dayKey = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const num = v => Number(v || 0).toLocaleString("es-CL");
+const num = v => Number(v || 0).toLocaleString(window.ARGOSS_LOCALE || "es-CL");
 
 function dayTitle(k) {
   const now = new Date();
   const y = new Date(); y.setDate(y.getDate() - 1);
-  if (k === dayKey(now)) return "Hoy";
-  if (k === dayKey(y)) return "Ayer";
+  if (k === dayKey(now)) return t("Hoy");
+  if (k === dayKey(y)) return t("Ayer");
   const d = new Date(k + "T12:00:00");
-  const t = d.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
-  return t.charAt(0).toUpperCase() + t.slice(1);
+  const s = d.toLocaleDateString(window.ARGOSS_LOCALE || "es-CL", { weekday: "long", day: "numeric", month: "long" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // ===== FILTROS =====
@@ -73,34 +73,34 @@ function renderTiles(r) {
 
   // Comunicaciones ahora
   if (r.hmiSinDatos) {
-    tiles.push({ cls: "alarma", label: "Comunicaciones ahora", value: "HMI sin datos", small: true });
+    tiles.push({ cls: "alarma", label: t("Comunicaciones ahora"), value: t("HMI sin datos"), small: true });
   } else if (!r.brokerOk) {
-    tiles.push({ cls: "alarma", label: "Comunicaciones ahora", value: "Broker desconectado", small: true });
+    tiles.push({ cls: "alarma", label: t("Comunicaciones ahora"), value: t("Broker desconectado"), small: true });
   } else {
-    tiles.push({ cls: "ok", label: "Comunicaciones ahora", value: "HMI y broker OK", small: true });
+    tiles.push({ cls: "ok", label: t("Comunicaciones ahora"), value: t("HMI y broker OK"), small: true });
   }
 
   const sd = (r.silosSinDatos || []).length;
-  tiles.push({ cls: r.hmiSinDatos || sd ? "aviso" : "ok", label: "Silos sin datos ahora", value: r.hmiSinDatos ? "Todos" : sd });
+  tiles.push({ cls: r.hmiSinDatos || sd ? "aviso" : "ok", label: t("Silos sin datos ahora"), value: r.hmiSinDatos ? t("Todos") : sd });
 
-  tiles.push({ cls: r.alarmasHoy ? "alarma" : "ok", label: "Alarmas hoy", value: num(r.alarmasHoy) });
+  tiles.push({ cls: r.alarmasHoy ? "alarma" : "ok", label: t("Alarmas hoy"), value: num(r.alarmasHoy) });
 
-  tiles.push({ cls: "", label: "Proceso hoy", small: true,
-    value: num(r.recargasHoy) + (r.recargasHoy === 1 ? " recarga" : " recargas") });
+  tiles.push({ cls: "", label: t("Proceso hoy"), small: true,
+    value: num(r.recargasHoy) + (r.recargasHoy === 1 ? " " + t("recarga") : " " + t("recargas")) });
 
-  if (isAdmin) tiles.push({ cls: "", label: "Accesos hoy", value: num(r.accesosHoy) });
+  if (isAdmin) tiles.push({ cls: "", label: t("Accesos hoy"), value: num(r.accesosHoy) });
 
-  $("evTiles").innerHTML = tiles.map(t => `
-    <div class="ev-tile ${t.cls}">
-      <div class="ev-tile-label">${t.label}</div>
-      <div class="ev-tile-value${t.small ? " small" : ""}">${esc(t.value)}</div>
+  $("evTiles").innerHTML = tiles.map(x => `
+    <div class="ev-tile ${x.cls}">
+      <div class="ev-tile-label">${x.label}</div>
+      <div class="ev-tile-value${x.small ? " small" : ""}">${esc(x.value)}</div>
     </div>`).join("");
 }
 
 function renderChips(data) {
   const list = [""].concat(data.categorias);
   $("evChips").innerHTML = list.map(id =>
-    `<button class="ev-chip ${cat === id ? "active" : ""}" data-cat="${id}">${id ? CAT_NAME[id] : "Todos"}` +
+    `<button class="ev-chip ${cat === id ? "active" : ""}" data-cat="${id}">${id ? CAT_NAME[id] : t("Todos")}` +
     `<span class="ev-count">${num(data.counts[id] || 0)}</span></button>`).join("");
   $("evChips").querySelectorAll(".ev-chip").forEach(b => {
     b.onclick = () => { cat = b.dataset.cat; shown = PAGE_SIZE; load(); };
@@ -115,8 +115,8 @@ function fillSelect(el, items, allText) {
 
 function renderTable(data) {
   const cols = isAdmin ? 7 : 6;
-  let html = `<tr><th>Hora</th><th>Severidad</th><th>Categoría</th><th>Evento</th><th>Silo</th>` +
-    `${isAdmin ? "<th>Usuario</th>" : ""}<th>Detalle</th></tr>`;
+  let html = `<tr><th>${t("Hora")}</th><th>${t("Severidad")}</th><th>${t("Categoría")}</th><th>${t("Evento")}</th><th>${t("Silo")}</th>` +
+    `${isAdmin ? `<th>${t("Usuario")}</th>` : ""}<th>${t("Detalle")}</th></tr>`;
   let lastDay = null;
   data.eventos.forEach(e => {
     const k = e.ts.slice(0, 10);
@@ -131,14 +131,14 @@ function renderTable(data) {
       <td class="ev-detail">${esc(e.detalle)}</td></tr>`;
   });
   if (!data.eventos.length) {
-    html += `<tr><td colspan="${cols}" class="ev-empty">Sin eventos para los filtros elegidos</td></tr>`;
+    html += `<tr><td colspan="${cols}" class="ev-empty">${t("Sin eventos para los filtros elegidos")}</td></tr>`;
   }
   $("evTable").innerHTML = html;
   fresh.clear();
 
   $("evFooter").innerHTML =
-    `<span>Mostrando ${num(data.eventos.length)} de ${num(data.total)} eventos · se conservan ${Math.round(data.retencionDias / 30)} meses</span>` +
-    (data.total > data.eventos.length ? `<button class="ev-more" id="evMore">Mostrar más</button>` : "");
+    `<span>${t("Mostrando {a} de {b} eventos · se conservan {m} meses", { a: num(data.eventos.length), b: num(data.total), m: Math.round(data.retencionDias / 30) })}</span>` +
+    (data.total > data.eventos.length ? `<button class="ev-more" id="evMore">${t("Mostrar más")}</button>` : "");
   const more = $("evMore");
   if (more) more.onclick = () => { shown += PAGE_SIZE; load(); };
 }
@@ -146,8 +146,8 @@ function renderTable(data) {
 function render(data) {
   renderTiles(data.resumen);
   renderChips(data);
-  fillSelect($("evSilo"), data.silos, "Todos los silos");
-  if (isAdmin) fillSelect($("evUser"), data.usuarios, "Todos los usuarios");
+  fillSelect($("evSilo"), data.silos, t("Todos los silos"));
+  if (isAdmin) fillSelect($("evUser"), data.usuarios, t("Todos los usuarios"));
   renderTable(data);
 }
 

@@ -195,6 +195,8 @@ app.post("/login", async function (req, res) {
     if (ok) {
       req.session.user = username;
       req.session.loginAt = Date.now();
+      // Idioma elegido en el login (ES / EN): queda como preferencia del usuario
+      if (req.body.idioma === "es" || req.body.idioma === "en") savePrefs(username, { idioma: req.body.idioma });
       eventos.userLoggedIn(username);
       eventos.log("usuarios", "info", "Inicio de sesión", { usuario: username, ip: ip,
         detalle: "IP " + ip + " · " + eventos.describeAgent(req.get("user-agent")) + (fromPortal ? " · desde argoss.cl" : "") });
@@ -222,14 +224,50 @@ app.get("/logout", function (req, res) {
 });
 
 // El propio frontend puede pedir quién está logueado
+// ===== PREFERENCIAS DE USUARIO (botón ⚙: apariencia e idioma) =====
+// Se guardan por usuario en userPrefs.json (no está en Git). Por defecto: tema oscuro, español.
+const PREFS_FILE = path.join(__dirname, "userPrefs.json");
+const PREF_DEFAULTS = { tema: "oscuro", idioma: "es" };
+const PREF_VALUES = { tema: ["oscuro", "claro"], idioma: ["es", "en"] };
+
+function readPrefsFile() {
+  try { return JSON.parse(require("fs").readFileSync(PREFS_FILE, "utf8")) || {}; } catch (e) { return {}; }
+}
+
+function prefsFor(user) {
+  return Object.assign({}, PREF_DEFAULTS, readPrefsFile()[user] || {});
+}
+
 app.get("/whoami", requireAuth, function (req, res) {
   res.json({
     user: req.session.user,
     isAdmin: isAdmin(req.session.user),
     planta: plantaNombre(),
     version: APP_VERSION,
-    commit: APP_COMMIT
+    commit: APP_COMMIT,
+    prefs: prefsFor(req.session.user)
   });
+});
+
+function savePrefs(user, changes) {
+  var all = readPrefsFile();
+  var mine = Object.assign({}, PREF_DEFAULTS, all[user] || {});
+  Object.keys(PREF_VALUES).forEach(function (k) {
+    var v = changes && changes[k];
+    if (PREF_VALUES[k].indexOf(v) >= 0) mine[k] = v;
+  });
+  all[user] = mine;
+  require("fs").writeFileSync(PREFS_FILE, JSON.stringify(all, null, 2));
+  return mine;
+}
+
+app.post("/preferencias", requireAuth, function (req, res) {
+  try {
+    res.json({ ok: true, prefs: savePrefs(req.session.user, req.body) });
+  } catch (e) {
+    console.error("No se pudieron guardar las preferencias:", e.message);
+    res.status(500).json({ ok: false });
+  }
 });
 
 // ===== SOCKET.IO — sesión compartida en todos los namespaces =====
