@@ -287,9 +287,18 @@ body {
 .session-bar .settings-btn { grid-area: gear; }
 
 .session-bar .current-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-weight: bold;
   color: var(--accent-text);
   white-space: nowrap;
+}
+
+.session-bar .user-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
 }
 
 .session-bar .connected-users {

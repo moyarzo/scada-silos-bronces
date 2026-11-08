@@ -172,7 +172,7 @@ function renderDateSelector() {
 
   const todayKey = getTodayKey();
   select.innerHTML = availableHistoryDates.map(dateKey => {
-    const label = dateKey === todayKey ? dateKey + " (Hoy)" : dateKey;
+    const label = dateKey === todayKey ? dateKey + " (" + t("Hoy") + ")" : dateKey;
     return `<option value="${dateKey}" ${dateKey === selectedHistoryDate ? "selected" : ""}>${label}</option>`;
   }).join("");
 
@@ -274,20 +274,20 @@ function initCharts() {
           },
           tooltip: {
             callbacks: {
-              label: ctx => ctx.parsed.y == null ? "Sin dato" : `${ctx.parsed.y.toFixed(2)} ton`
+              label: ctx => ctx.parsed.y == null ? t("Sin dato") : `${ctx.parsed.y.toFixed(2)} ton`
             }
           }
         },
         scales: {
           x: {
-            title: { display: true, text: "Hora" },
+            title: { display: true, text: t("Hora") },
             min: 0, max: FIXED_DAY_LABELS.length - 1,
             ticks: { autoSkip: true, maxTicksLimit: window.innerWidth < 768 ? 7 : 13 },
             grid:  { display: true, color: scadaColor("--chart-grid-strong", "#dbe2ea"), lineWidth: 1 }
           },
           y: {
             min: 0, max: 500,
-            title: { display: true, text: "Ton" },
+            title: { display: true, text: t("Ton") },
             ticks: { stepSize: 50 },
             grid:  { display: true, color: scadaColor("--chart-grid", "#e5e7eb"), lineWidth: 1 }
           }
@@ -336,7 +336,7 @@ function updateMiniSiloCharts() {
         responsive: true, maintainAspectRatio: false, animation: false,
         plugins: { legend: { display: false },
           tooltip: { enabled: true, callbacks: {
-            label: ctx => ctx.parsed.y == null ? "Sin dato" : ctx.parsed.y.toFixed(1) + "%"
+            label: ctx => ctx.parsed.y == null ? t("Sin dato") : ctx.parsed.y.toFixed(1) + "%"
           }}
         },
         scales: {
@@ -401,7 +401,7 @@ function renderSummary() {
   const td         = activeTurn.data ? activeTurn.data : activeTurn;
   const start      = td.start || {};
   const end        = td.end   || {};
-  const dateLabel  = isToday ? "Hoy" : (selectedHistoryDate || getTodayKey());
+  const dateLabel  = isToday ? t("Hoy") : (selectedHistoryDate || getTodayKey());
 
   Object.keys(charts).forEach(product => {
     const safeId = product.replace(/[^a-zA-Z0-9]/g, "");
@@ -412,14 +412,14 @@ function renderSummary() {
       el.innerHTML = `
         <div style="background:${PRODUCTS[product].color};padding:8px;border-radius:8px;color:#fff;">
           <strong>${product}</strong> &mdash; <span style="font-size:.85em;opacity:.9">${dateLabel}</span><br>
-          <strong>Totalizador:</strong> ${(totals[product] || 0).toFixed(1)} ton
+          <strong>${t("Totalizador:")}</strong> ${(totals[product] || 0).toFixed(1)} ton
         </div>`;
     } else {
       el.innerHTML = `
         <div style="background:${PRODUCTS[product].color};padding:8px;border-radius:8px;color:#fff;">
           <strong>${product}</strong><br>
-          <strong>Totalizador:</strong> ${(totals[product] || 0).toFixed(1)} ton<br>
-          <strong>Modo:</strong> Demo
+          <strong>${t("Totalizador:")}</strong> ${(totals[product] || 0).toFixed(1)} ton<br>
+          <strong>${t("Modo:")}</strong> Demo
         </div>`;
     }
 

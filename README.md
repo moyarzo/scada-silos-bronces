@@ -30,11 +30,12 @@ One server and one web page monitor two silo systems:
 - Plant capacity gauge per product
 - **Indicators** page: daily consumption, receptions and per-silo usage over 30 days, with a radar-noise filter
 - **Events** page: a 3-month event log — user sessions and actions, communications (MQTT broker, silos or HMI without data), process events (refills, jumps, false readings, radar noise) and operation (shift records, daily summary), with filters, live updates and Excel/CSV export
-- Login with bcrypt-hashed users, 8 h sessions, live list of connected users
+- Login with bcrypt-hashed users and 8 h sessions
+- Per-user **settings**: dark or light appearance and Spanish or English interface, saved on the server so they follow the user to any device
 - Multi-plant login: one domain (`argoss.cl`) with a plant selector; each plant keeps its own server, users and history
 - Role-based access: downloads and DEMO mode are visible only to the `Admin` user
 - Daily Excel report and 30-day CSV export per system (Admin only)
-- REAL / DEMO modes (DEMO generates random data in the browser)
+- REAL / DEMO modes (DEMO generates random data in the browser; Admin only)
 - Product assignment per Matriz silo
 
 ---
@@ -47,11 +48,13 @@ One server and one web page monitor two silo systems:
 
 Behind the login box, an animated **radar background** (drawn in a canvas, no video or external files): range rings, a sweep that turns every 6 s with a fading trail, echo pulses and targets that light up as the sweep passes. It pauses when the tab is hidden and stays still when the device asks for reduced motion.
 
+An **ES / EN** switch in the top-right corner of the box changes the login language; the choice is kept in the browser and saved as the user's language when they log in.
+
 The login asks for the **plant**, user and password. On `argoss.cl` the form is sent to the selected plant's server; on a plant server (or by IP) the local plant is preselected and the login stays local. A failed login or logout returns to the same screen with the plant preselected, and the browser remembers the last plant used. See [Publishing on argoss.cl](#publishing-on-argosscl-multi-plant).
 
 ### Dashboard
 
-The page has five tabs. ARGOSS opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`, `/#eventos`). The user interface is in Spanish.
+The page has five tabs. ARGOSS opens on **Totalizadores**, and the active tab is kept in the URL (`/#totales`, `/#matriz`, `/#nitrato`, `/#kpi`, `/#eventos`). The interface is in Spanish by default and can be switched to English from the settings panel (the event log details and the downloaded files stay in Spanish).
 
 | Tab | Content |
 |---|---|
@@ -61,11 +64,25 @@ The page has five tabs. ARGOSS opens on **Totalizadores**, and the active tab is
 | **Indicadores** (indicators) | Last 30 days from history: per product, today's consumption, daily average, 30-day consumption and receptions with number of refills; daily consumption vs. reception chart; per-silo daily consumption table with totals, refills, discarded jumps (power cuts) and measured radar noise |
 | **Eventos** (events) | Event log of the last 3 months: status cards (communications now, silos without data now, today's alarms, today's refills and, for Admin, today's logins), category filters with counts, date / severity / silo / user filters, search, table grouped by day with live updates. See [Event log](#event-log-libeventosjs) |
 
-The header shows the Enaex logo with the **plant name** below it (taken from `plantas.json` using `PLANTA_ID`, so each plant server shows its own), the **ARGOSS** logotype in the **Orbitron** typeface with a **radar "O"** — an SVG ring with a sweep that slowly rotates (one turn every 4 s; it stays still when the device asks for reduced motion) and two echoes — also used on the login page, with the **version number** next to it (hover to see the Git commit) and its meaning, *Automated Radar Gauging & Online Stock System*. Next to the version, a **signal indicator** shows **ONLINE** (green) when Matriz or Nitrate received MQTT data in the last 5 minutes and **OFFLINE** (red) otherwise; both systems share the HMI and broker, and the time of the last reading appears when hovering over it. On the right, the current user and the **Cerrar sesión** (logout) button, with the list of connected users right below them (centered on phones). The browser tab title is "ARGOSS · <plant>".
+The header shows the Enaex logo with the **plant name** below it (taken from `plantas.json` using `PLANTA_ID`, so each plant server shows its own), the **ARGOSS** logotype in the **Orbitron** typeface with a **radar "O"** — an SVG ring with a sweep that slowly rotates (one turn every 4 s; it stays still when the device asks for reduced motion) and two echoes — also used on the login page, with the **version number** next to it (hover to see the Git commit) and its meaning, *Automated Radar Gauging & Online Stock System*. Next to the version, a **signal indicator** shows **ONLINE** (green) when Matriz or Nitrate received MQTT data in the last 5 minutes and **OFFLINE** (red) otherwise; both systems share the HMI and broker, and the time of the last reading appears when hovering over it. On the right, a **user icon** (head and shoulders silhouette, in the accent color of the active theme) with the user name, and the **⚙ settings** button (centered on phones). The browser tab title is "ARGOSS · <plant>".
 
-**Dark theme.** The whole dashboard uses the same dark navy palette as the login. Every interface color is a CSS variable in one block at the top of [`public/styles.css`](public/styles.css) (`--bg`, `--surface`, `--text`, `--chart-grid`…); the charts read them through `scadaColor()` (`public/main.js`), so a tone is changed in one place. Product colors (DL-5 blue, VE-03 green, ASE orange, Nitrate yellow) and status colors (green / amber / red) are unchanged.
+**Settings panel (⚙).** Opens below the button and closes with Esc or a click outside it:
 
-The top bar is shared by all tabs: REAL/DEMO selector (Admin only; other users always see REAL), the **Fecha** (date) selector for the charts and the download buttons (Admin only, shown according to the active tab).
+| Section | Options | Who sees it |
+|---|---|---|
+| Apariencia / Appearance | **Oscuro** (dark, default) · **Claro** (light, the pre-3.0.8 palette) | Everyone |
+| Idioma / Language | **Español** (default) · **English** | Everyone |
+| Modo de datos / Data mode | REAL · DEMO | Admin |
+| Descargas / Downloads | Daily Excel and 30-day history, for Matriz and Nitrate | Admin |
+| Cerrar sesión / Log out | | Everyone |
+
+Choosing an appearance or language saves it for the user on the server (`userPrefs.json`, `POST /preferencias`) and reloads the page; it is also kept in the browser so the page opens with the right colors and language without flicker. Logging in on another computer or phone applies the user's saved choice.
+
+**Themes.** Every interface color is a CSS variable at the top of [`public/styles.css`](public/styles.css) — `:root` for the dark theme and `:root[data-theme="light"]` for the light one (`--bg`, `--surface`, `--text`, `--chart-grid`…). The charts and gauges read them through `scadaColor()` (`public/main.js`), so a tone is changed in one place. Product colors (DL-5 blue, VE-03 green, ASE orange, Nitrate yellow) and status colors (green / amber / red) are the same in both themes.
+
+**Language.** Texts live in [`public/i18n.js`](public/i18n.js): the Spanish text is the key and the English dictionary maps it (`t("Hoy")` → "Today"; static HTML uses `data-i18n`). To translate a new text, add it to the dictionary. Numbers and dates follow the language (`es-CL` / `en-US`).
+
+Below the tabs, the **Fecha** (date) selector for the charts is shared by Totalizadores, Silos Matriz and Silos Nitrato.
 
 **Plant capacity** (gauge in Totalizadores): DL-5 420 t, ASE 37 t, Nitrate 480 t. Change it in `PRODUCT_CAPACITY` in `public/matriz.js` and `public/nitrato.js` (VE-03 has no capacity defined).
 
@@ -291,8 +308,9 @@ Data files are not touched by updates, so `git pull` followed by `pm2 restart sc
 | Indicadores tab | ✔ | ✔ |
 | Eventos tab: communications and process events | ✔ | ✔ |
 | Eventos tab: user and operation events, user filter, Excel / CSV | ✔ | — |
-| REAL / DEMO selector | ✔ | — (always REAL) |
-| Excel / CSV downloads | ✔ | — |
+| Appearance and language settings | ✔ | ✔ |
+| REAL / DEMO selector (settings panel) | ✔ | — (always REAL) |
+| Excel / CSV downloads (settings panel) | ✔ | — |
 
 Restrictions are enforced on the server too: download routes return HTTP 403 for non-admin users, and the event log never sends user or operation events to them.
 
@@ -302,7 +320,7 @@ Restrictions are enforced on the server too: download routes return HTTP 403 for
 
 ```
 scada-silos-bronces/
-├── server.js                 ← Express, login/session, Socket.IO (connected users)
+├── server.js                 ← Express, login/session, user preferences, Socket.IO
 ├── lib/
 │   ├── utils.js              ← Shared helpers (dates, JSON, Delta decoding)
 │   ├── matriz.js             ← Matriz backend   (Socket.IO /matriz,  routes /matriz/*)
@@ -318,7 +336,8 @@ scada-silos-bronces/
 ├── public/
 │   ├── index.html            ← Dashboard with the five tabs
 │   ├── login.html            ← Login with plant selector (also served as the argoss.cl portal)
-│   ├── main.js               ← Tabs, session, roles, shared MQTT status, shift table and capacity gauge
+│   ├── i18n.js               ← Language (ES / EN) and theme bootstrap, loaded first
+│   ├── main.js               ← Tabs, session, roles, settings panel, shared MQTT status, shift table and capacity gauge
 │   ├── matriz.js             ← Matriz frontend
 │   ├── nitrato.js            ← Nitrate frontend
 │   ├── kpi.js                ← Indicators tab
@@ -348,7 +367,7 @@ scada-silos-bronces/
 | `exports/stock_diario_YYYYMMDD.xlsx` | `exports/stock_nitrato_YYYYMMDD.xlsx` | Daily Excel report |
 | `historial_YYYYMMDD.csv` | `resumen_nitrato_YYYYMMDD.csv` | 30-day CSV export |
 
-Shared by both systems: `eventos/eventos_YYYY-MM.jsonl` (event log, 3 months).
+Shared by both systems: `eventos/eventos_YYYY-MM.jsonl` (event log, 3 months) and `userPrefs.json` (appearance and language per user). Both are ignored by Git, so `git pull` never touches them.
 
 ### HTTP routes
 
@@ -366,6 +385,11 @@ The legacy routes `/export-data`, `/export-daily-summary` and `/export-trend` st
 | `/eventos?desde=&hasta=&cat=&sev=&silo=&usuario=&q=&limit=&offset=` | Any logged-in user (non-admin users only get communications and process events) |
 | `/eventos/export?formato=xlsx` or `formato=csv` (same filters) | Admin |
 
+| Settings | Access |
+|---|---|
+| `/whoami` (user, role and saved preferences) | Any logged-in user |
+| `POST /preferencias` `{ tema: "oscuro" \| "claro", idioma: "es" \| "en" }` | Any logged-in user (only their own) |
+
 ---
 
 ## Versioning
@@ -377,6 +401,7 @@ The version shown next to ARGOSS is the `version` field of [`package.json`](pack
 | 1.x | Separate Matriz and Nitrate SCADAs |
 | 2.0 | Matriz + Nitrate in one system |
 | **3.0** | ARGOSS: Indicators, Events, multi-plant login, argoss.cl |
+| **3.1** | Per-user settings panel: dark / light appearance, Spanish / English interface; REAL/DEMO, downloads and logout move into the panel (3.1.1) |
 
 Convention: `3.0.1`, `3.0.2`… for fixes (a calculation or text adjustment); `3.1`, `3.2`… for new features (a new tab or indicator); a new major version for changes in how the system is deployed or stores data.
 

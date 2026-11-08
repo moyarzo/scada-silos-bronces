@@ -17,12 +17,12 @@ let lastData = null;
 // ===== UTILIDADES =====
 
 function fmt(v, dec) {
-  return Number(v || 0).toLocaleString("es-CL", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  return Number(v || 0).toLocaleString(window.ARGOSS_LOCALE || "es-CL", { minimumFractionDigits: dec, maximumFractionDigits: dec });
 }
 
 function dayLabel(dateKey, isLast) {
   const p = dateKey.split("-");
-  return isLast ? "Hoy" : p[2] + "-" + p[1];
+  return isLast ? t("Hoy") : p[2] + "-" + p[1];
 }
 
 function hexToRgba(hex, alpha) {
@@ -81,12 +81,12 @@ function renderTiles(products) {
       <div class="kpi-tile" style="border-top-color:${PRODUCT_COLOR[p.name]}">
         <div class="kpi-tile-title"><span class="kpi-dot" style="background:${PRODUCT_COLOR[p.name]}"></span>${p.name}</div>
         <div class="kpi-tile-grid">
-          <div><div class="kpi-label">Consumo hoy</div><div class="kpi-value">${fmt(hoy, 1)} t</div></div>
-          <div><div class="kpi-label">Promedio diario</div><div class="kpi-value">${fmt(avg, 1)} t</div>
-               <div class="kpi-sub">${fullDays.length} días con datos</div></div>
-          <div><div class="kpi-label">Consumo 30 días</div><div class="kpi-value">${fmt(total, 1)} t</div></div>
-          <div><div class="kpi-label">Recepciones 30 días</div><div class="kpi-value">${fmt(rec, 1)} t</div>
-               <div class="kpi-sub">${nRec} ${nRec === 1 ? "recarga" : "recargas"}</div></div>
+          <div><div class="kpi-label">${t("Consumo hoy")}</div><div class="kpi-value">${fmt(hoy, 1)} t</div></div>
+          <div><div class="kpi-label">${t("Promedio diario")}</div><div class="kpi-value">${fmt(avg, 1)} t</div>
+               <div class="kpi-sub">${t("{n} días con datos", { n: fullDays.length })}</div></div>
+          <div><div class="kpi-label">${t("Consumo 30 días")}</div><div class="kpi-value">${fmt(total, 1)} t</div></div>
+          <div><div class="kpi-label">${t("Recepciones 30 días")}</div><div class="kpi-value">${fmt(rec, 1)} t</div>
+               <div class="kpi-sub">${nRec} ${nRec === 1 ? t("recarga") : t("recargas")}</div></div>
         </div>
       </div>`;
   }).join("");
@@ -103,7 +103,7 @@ function renderCharts(products) {
     const id = p.name.replace(/[^a-zA-Z0-9]/g, "");
     return `
       <div class="panel-card kpi-chart-card">
-        <div class="kpi-chart-title">${p.name} · consumo y recepciones diarias (t)</div>
+        <div class="kpi-chart-title">${p.name} · ${t("consumo y recepciones diarias (t)")}</div>
         <div class="kpi-chart-wrapper"><canvas id="kpiChart-${id}"></canvas></div>
       </div>`;
   }).join("");
@@ -120,8 +120,8 @@ function renderCharts(products) {
       data: {
         labels,
         datasets: [
-          { label: "Consumo", data: p.consumo, backgroundColor: PRODUCT_COLOR[p.name], ...bar },
-          { label: "Recepción", data: p.recepcion, backgroundColor: RECEPCION_COLOR, ...bar }
+          { label: t("Consumo"), data: p.consumo, backgroundColor: PRODUCT_COLOR[p.name], ...bar },
+          { label: t("Recepción"), data: p.recepcion, backgroundColor: RECEPCION_COLOR, ...bar }
         ]
       },
       options: {
@@ -134,7 +134,7 @@ function renderCharts(products) {
             callbacks: {
               title: items => p.days[items[0].dataIndex],
               label: ctx => `${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} t` +
-                (ctx.datasetIndex === 1 && p.recargas[ctx.dataIndex] ? ` (${p.recargas[ctx.dataIndex]} recarga${p.recargas[ctx.dataIndex] > 1 ? "s" : ""})` : "")
+                (ctx.datasetIndex === 1 && p.recargas[ctx.dataIndex] ? ` (${p.recargas[ctx.dataIndex]} ${p.recargas[ctx.dataIndex] > 1 ? t("recargas") : t("recarga")})` : "")
             }
           }
         },
@@ -151,7 +151,7 @@ function renderCharts(products) {
 function renderSiloTable(elId, src, title) {
   const el = document.getElementById(elId);
   if (!el) return;
-  if (!src || !src.silos) { el.innerHTML = `<div class="kpi-empty">Sin datos de ${title}</div>`; return; }
+  if (!src || !src.silos) { el.innerHTML = `<div class="kpi-empty">${t("Sin datos de {x}", { x: title })}</div>`; return; }
 
   const days = src.days;
   const silos = Object.keys(src.silos);
@@ -168,23 +168,23 @@ function renderSiloTable(elId, src, title) {
     return steps[Math.min(steps.length - 1, Math.floor((v / m) * steps.length))];
   };
 
-  const head = `<tr><th class="kpi-sticky">Silo</th>${days.map((d, i) => `<th title="${d}">${dayLabel(d, i === days.length - 1)}</th>`).join("")}
-    <th class="kpi-total">Consumo 30 d</th><th class="kpi-total">Recepción 30 d</th><th class="kpi-total">Recargas</th>
-    <th class="kpi-total" title="Saltos bruscos descartados en 30 días (cortes de energía o reinicios del sensor/HMI). No se cuentan como consumo, recepción ni recarga.">Saltos</th>
-    <th class="kpi-total" title="Ruido promedio de la lectura del radar (1σ, en toneladas). Un aumento sostenido puede indicar un problema del sensor.">Ruido radar</th></tr>`;
+  const head = `<tr><th class="kpi-sticky">${t("Silo")}</th>${days.map((d, i) => `<th title="${d}">${dayLabel(d, i === days.length - 1)}</th>`).join("")}
+    <th class="kpi-total">${t("Consumo 30 d")}</th><th class="kpi-total">${t("Recepción 30 d")}</th><th class="kpi-total">${t("Recargas")}</th>
+    <th class="kpi-total" title="${t("Saltos bruscos descartados en 30 días (cortes de energía o reinicios del sensor/HMI). No se cuentan como consumo, recepción ni recarga.")}">${t("Saltos")}</th>
+    <th class="kpi-total" title="${t("Ruido promedio de la lectura del radar (1σ, en toneladas). Un aumento sostenido puede indicar un problema del sensor.")}">${t("Ruido radar")}</th></tr>`;
 
   const rows = silos.map(id => {
     const s = src.silos[id];
     const color = PRODUCT_COLOR[s.product] || "#64748b";
     const cells = days.map((d, i) => {
-      if (!s.conDatos[i]) return `<td class="kpi-nodata" title="${d}: sin datos">·</td>`;
+      if (!s.conDatos[i]) return `<td class="kpi-nodata" title="${d}: ${t("sin datos")}">·</td>`;
       const v = s.consumo[i];
       const a = alphaFor(v, s.product);
-      const rec = s.recepcion[i] ? `\nRecepción: ${fmt(s.recepcion[i], 1)} t` : "";
-      return `<td style="background:${a ? hexToRgba(color, a) : "transparent"}" title="${d}\nConsumo: ${fmt(v, 1)} t${rec}">${v ? fmt(v, 1) : ""}</td>`;
+      const rec = s.recepcion[i] ? `\n${t("Recepción")}: ${fmt(s.recepcion[i], 1)} t` : "";
+      return `<td style="background:${a ? hexToRgba(color, a) : "transparent"}" title="${d}\n${t("Consumo")}: ${fmt(v, 1)} t${rec}">${v ? fmt(v, 1) : ""}</td>`;
     }).join("");
     return `<tr>
-      <th class="kpi-sticky"><span class="kpi-dot" style="background:${color}"></span>Silo ${id.replace("tanque", "")}
+      <th class="kpi-sticky"><span class="kpi-dot" style="background:${color}"></span>${t("Silo")} ${id.replace("tanque", "")}
         <span class="kpi-prod">${s.product}</span></th>
       ${cells}
       <td class="kpi-total">${fmt(sum(s.consumo), 1)}</td>
@@ -195,7 +195,7 @@ function renderSiloTable(elId, src, title) {
   }).join("");
 
   el.innerHTML = `
-    <div class="kpi-table-title">${title} · consumo diario por silo (t)</div>
+    <div class="kpi-table-title">${title} · ${t("consumo diario por silo (t)")}</div>
     <div class="kpi-table-scroll"><table class="kpi-table">${head}${rows}</table></div>`;
 
   const scroll = el.querySelector(".kpi-table-scroll");
@@ -206,8 +206,8 @@ function render(data) {
   const products = collectProducts(data);
   renderTiles(products);
   renderCharts(products);
-  renderSiloTable("kpiSiloMatriz", data.matriz, "Silos Matriz");
-  renderSiloTable("kpiSiloNitrato", data.nitrato, "Silos Nitrato");
+  renderSiloTable("kpiSiloMatriz", data.matriz, t("Silos Matriz"));
+  renderSiloTable("kpiSiloNitrato", data.nitrato, t("Silos Nitrato"));
 }
 
 // ===== CICLO DE VIDA DE LA PESTAÑA =====

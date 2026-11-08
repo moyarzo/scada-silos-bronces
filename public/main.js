@@ -147,20 +147,20 @@ window.scadaTotals = (function () {
 
     let rows;
     if (opts.isDemo) {
-      rows = `<tr><td colspan="2" class="shift-empty">Modo demo: sin registro de turno</td></tr>`;
+      rows = `<tr><td colspan="2" class="shift-empty">${t("Modo demo: sin registro de turno")}</td></tr>`;
     } else {
-      let variation = null, variationLabel = "Variación turno";
+      let variation = null, variationLabel = t("Variación turno");
       if (opts.start != null && opts.end != null) {
         variation = opts.end - opts.start;
       } else if (opts.start != null && opts.isToday) {
         variation = opts.total - opts.start;
-        variationLabel = "Variación (en curso)";
+        variationLabel = t("Variación (en curso)");
       }
       const varClass = variation == null ? "" : (variation > 0 ? "var-pos" : variation < 0 ? "var-neg" : "");
       const varText = variation == null ? "—" : (variation > 0 ? "+" : "") + variation.toFixed(1) + " t";
       rows = `
-        <tr><td>Inicio turno (07:00)</td><td>${fmt(opts.start)}</td></tr>
-        <tr><td>Cierre turno (19:00)</td><td>${fmt(opts.end)}</td></tr>
+        <tr><td>${t("Inicio turno (07:00)")}</td><td>${fmt(opts.start)}</td></tr>
+        <tr><td>${t("Cierre turno (19:00)")}</td><td>${fmt(opts.end)}</td></tr>
         <tr class="shift-var"><td>${variationLabel}</td><td class="${varClass}">${varText}</td></tr>`;
     }
 
@@ -169,7 +169,7 @@ window.scadaTotals = (function () {
       const percent = (opts.total / opts.capacity) * 100;
       gauge = `
         <div class="cap-gauge">
-          <div class="cap-gauge-title">Capacidad planta</div>
+          <div class="cap-gauge-title">${t("Capacidad planta")}</div>
           ${capacityGauge(percent, opts.color)}
           <div class="cap-gauge-value" style="color:${opts.color}">${percent.toFixed(1)}%</div>
           <div class="cap-gauge-detail">${opts.total.toFixed(1)} / ${opts.capacity} t</div>
@@ -177,15 +177,15 @@ window.scadaTotals = (function () {
     } else {
       gauge = `
         <div class="cap-gauge">
-          <div class="cap-gauge-title">Capacidad planta</div>
-          <div class="cap-gauge-detail">Sin capacidad definida</div>
+          <div class="cap-gauge-title">${t("Capacidad planta")}</div>
+          <div class="cap-gauge-detail">${t("Sin capacidad definida")}</div>
         </div>`;
     }
 
     el.innerHTML = `
       <div class="shift-table-wrap">
         <table class="shift-table">
-          <thead><tr><th colspan="2" style="border-color:${opts.color}">Registro de turno</th></tr></thead>
+          <thead><tr><th colspan="2" style="border-color:${opts.color}">${t("Registro de turno")}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -197,12 +197,20 @@ window.scadaTotals = (function () {
 
 // ===== SESIÓN =====
 
+// Ícono de usuario (silueta), toma el color del texto
+const USER_ICON = '<svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+  '<circle cx="12" cy="7.2" r="4.2" fill="currentColor"/>' +
+  '<path d="M3.5 21.5a8.5 8.5 0 0 1 17 0z" fill="currentColor"/></svg>';
+
 // Quién soy (usa la cookie de sesión ya activa).
 // Los botones de descarga (Excel / historial) solo se muestran al usuario Admin.
 fetch("/whoami")
   .then(function (res) { return res.json(); })
   .then(function (data) {
-    document.getElementById("currentUser").innerText = t("Usuario: {u}", { u: data.user });
+    const userEl = document.getElementById("currentUser");
+    userEl.innerHTML = USER_ICON + '<span class="current-user-name"></span>';
+    userEl.querySelector(".current-user-name").textContent = data.user;
+    userEl.title = t("Usuario") + ": " + data.user;
     if (data.prefs) syncPrefs(data.prefs);
 
     // Planta bajo el logo, pestaña del navegador y versión junto a ARGOSS

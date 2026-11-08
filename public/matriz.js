@@ -203,7 +203,7 @@ function renderDateSelector() {
   const todayKey = getTodayKey();
 
   select.innerHTML = availableHistoryDates.map(function (dateKey) {
-    const label = dateKey === todayKey ? dateKey + " (Hoy)" : dateKey;
+    const label = dateKey === todayKey ? dateKey + " (" + t("Hoy") + ")" : dateKey;
     return `<option value="${dateKey}" ${dateKey === selectedHistoryDate ? "selected" : ""}>${label}</option>`;
   }).join("");
 
@@ -357,7 +357,7 @@ function initCharts() {
           tooltip: {
             callbacks: {
               label: function (context) {
-                if (context.parsed.y == null) return "Sin dato";
+                if (context.parsed.y == null) return t("Sin dato");
                 return `${context.parsed.y.toFixed(2)} ton`;
               }
             }
@@ -365,7 +365,7 @@ function initCharts() {
         },
         scales: {
           x: {
-            title: { display: true, text: "Hora" },
+            title: { display: true, text: t("Hora") },
             min: 0,
             max: FIXED_DAY_LABELS.length - 1,
             ticks: {
@@ -377,7 +377,7 @@ function initCharts() {
           y: {
             min: yAxis.min,
             max: yAxis.max,
-            title: { display: true, text: "Ton" },
+            title: { display: true, text: t("Ton") },
             ticks: { stepSize: yAxis.stepSize },
             grid: { display: true, color: scadaColor("--chart-grid", "#e5e7eb"), lineWidth: 1 }
           }
@@ -447,7 +447,7 @@ function updateMiniSiloCharts() {
             enabled: true,
             callbacks: {
               label: function (context) {
-                if (context.parsed.y == null) return "Sin dato";
+                if (context.parsed.y == null) return t("Sin dato");
                 return context.parsed.y.toFixed(1) + "%";
               }
             }
@@ -587,7 +587,7 @@ function renderSummary() {
 
   // Etiqueta de fecha para el encabezado del cuadro
   const dateLabel = isToday
-    ? "Hoy"
+    ? t("Hoy")
     : (selectedHistoryDate || getTodayKey());
 
   Object.keys(charts).forEach(function (product) {
@@ -599,15 +599,15 @@ function renderSummary() {
       el.innerHTML = `
         <div style="background:${PRODUCTS[product].color}; padding:8px; border-radius:8px;">
           <strong>${product}</strong> &mdash; <span style="font-size:0.85em; opacity:0.9">${dateLabel}</span><br>
-          <strong>Totalizador:</strong> ${totals[product].toFixed(1)} ton
+          <strong>${t("Totalizador:")}</strong> ${totals[product].toFixed(1)} ton
         </div>
       `;
     } else {
       el.innerHTML = `
         <div style="background:${PRODUCTS[product].color}; padding:8px; border-radius:8px;">
           <strong>${product}</strong><br>
-          <strong>Totalizador:</strong> ${totals[product].toFixed(1)} ton<br>
-          <strong>Modo:</strong> Demo
+          <strong>${t("Totalizador:")}</strong> ${totals[product].toFixed(1)} ton<br>
+          <strong>${t("Modo:")}</strong> Demo
         </div>
       `;
     }

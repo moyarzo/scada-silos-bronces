@@ -195,6 +195,8 @@ app.post("/login", async function (req, res) {
     if (ok) {
       req.session.user = username;
       req.session.loginAt = Date.now();
+      // Idioma elegido en el login (ES / EN): queda como preferencia del usuario
+      if (req.body.idioma === "es" || req.body.idioma === "en") savePrefs(username, { idioma: req.body.idioma });
       eventos.userLoggedIn(username);
       eventos.log("usuarios", "info", "Inicio de sesión", { usuario: username, ip: ip,
         detalle: "IP " + ip + " · " + eventos.describeAgent(req.get("user-agent")) + (fromPortal ? " · desde argoss.cl" : "") });
@@ -247,21 +249,25 @@ app.get("/whoami", requireAuth, function (req, res) {
   });
 });
 
-app.post("/preferencias", requireAuth, function (req, res) {
+function savePrefs(user, changes) {
   var all = readPrefsFile();
-  var mine = Object.assign({}, PREF_DEFAULTS, all[req.session.user] || {});
+  var mine = Object.assign({}, PREF_DEFAULTS, all[user] || {});
   Object.keys(PREF_VALUES).forEach(function (k) {
-    var v = req.body && req.body[k];
+    var v = changes && changes[k];
     if (PREF_VALUES[k].indexOf(v) >= 0) mine[k] = v;
   });
-  all[req.session.user] = mine;
+  all[user] = mine;
+  require("fs").writeFileSync(PREFS_FILE, JSON.stringify(all, null, 2));
+  return mine;
+}
+
+app.post("/preferencias", requireAuth, function (req, res) {
   try {
-    require("fs").writeFileSync(PREFS_FILE, JSON.stringify(all, null, 2));
+    res.json({ ok: true, prefs: savePrefs(req.session.user, req.body) });
   } catch (e) {
     console.error("No se pudieron guardar las preferencias:", e.message);
-    return res.status(500).json({ ok: false });
+    res.status(500).json({ ok: false });
   }
-  res.json({ ok: true, prefs: mine });
 });
 
 // ===== SOCKET.IO — sesión compartida en todos los namespaces =====

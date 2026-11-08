@@ -66,7 +66,69 @@
       "Usuario": "User",
       "Todos los usuarios": "All users",
       "Buscar…": "Search…",
-      "Buscar": "Search"
+      "Buscar": "Search",
+
+      // Totalizadores y tarjetas de silo
+      "Hoy": "Today",
+      "Ayer": "Yesterday",
+      "Sin dato": "No data",
+      "Hora": "Time",
+      "Ton": "Tons",
+      "Totalizador:": "Total:",
+      "Modo:": "Mode:",
+      "Registro de turno": "Shift record",
+      "Inicio turno (07:00)": "Shift start (07:00)",
+      "Cierre turno (19:00)": "Shift end (19:00)",
+      "Variación turno": "Shift change",
+      "Variación (en curso)": "Change (ongoing)",
+      "Modo demo: sin registro de turno": "Demo mode: no shift record",
+      "Capacidad planta": "Plant capacity",
+      "Sin capacidad definida": "No capacity defined",
+
+      // Indicadores
+      "Consumo hoy": "Consumption today",
+      "Promedio diario": "Daily average",
+      "{n} días con datos": "{n} days with data",
+      "Consumo 30 días": "Consumption 30 days",
+      "Recepciones 30 días": "Receptions 30 days",
+      "recarga": "refill",
+      "recargas": "refills",
+      "consumo y recepciones diarias (t)": "daily consumption and receptions (t)",
+      "Consumo": "Consumption",
+      "Recepción": "Reception",
+      "Sin datos de {x}": "No data for {x}",
+      "Consumo 30 d": "Consumption 30 d",
+      "Recepción 30 d": "Reception 30 d",
+      "Recargas": "Refills",
+      "Saltos": "Jumps",
+      "Saltos bruscos descartados en 30 días (cortes de energía o reinicios del sensor/HMI). No se cuentan como consumo, recepción ni recarga.":
+        "Sudden jumps discarded in 30 days (power cuts or sensor/HMI restarts). Not counted as consumption, reception or refill.",
+      "Ruido radar": "Radar noise",
+      "Ruido promedio de la lectura del radar (1σ, en toneladas). Un aumento sostenido puede indicar un problema del sensor.":
+        "Average noise of the radar reading (1σ, in tonnes). A sustained increase may indicate a sensor problem.",
+      "sin datos": "no data",
+      "consumo diario por silo (t)": "daily consumption per silo (t)",
+
+      // Eventos
+      "Usuarios": "Users",
+      "Comunicaciones": "Communications",
+      "Proceso": "Process",
+      "Operación": "Operation",
+      "Todos": "All",
+      "Comunicaciones ahora": "Communications now",
+      "HMI sin datos": "HMI without data",
+      "Broker desconectado": "Broker disconnected",
+      "HMI y broker OK": "HMI and broker OK",
+      "Silos sin datos ahora": "Silos without data now",
+      "Alarmas hoy": "Alarms today",
+      "Proceso hoy": "Process today",
+      "Accesos hoy": "Logins today",
+      "Categoría": "Category",
+      "Evento": "Event",
+      "Detalle": "Details",
+      "Sin eventos para los filtros elegidos": "No events for the selected filters",
+      "Mostrando {a} de {b} eventos · se conservan {m} meses": "Showing {a} of {b} events · kept for {m} months",
+      "Mostrar más": "Show more"
     }
   };
 
