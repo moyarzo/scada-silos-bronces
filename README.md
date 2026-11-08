@@ -45,6 +45,8 @@ One server and one web page monitor two silo systems:
 
 <img src="docs/login.png" alt="ARGOSS login with plant selector" width="360">
 
+Behind the login box, an animated **radar background** (drawn in a canvas, no video or external files): range rings, a sweep that turns every 6 s with a fading trail, echo pulses and targets that light up as the sweep passes. It pauses when the tab is hidden and stays still when the device asks for reduced motion.
+
 The login asks for the **plant**, user and password. On `argoss.cl` the form is sent to the selected plant's server; on a plant server (or by IP) the local plant is preselected and the login stays local. A failed login or logout returns to the same screen with the plant preselected, and the browser remembers the last plant used. See [Publishing on argoss.cl](#publishing-on-argosscl-multi-plant).
 
 ### Dashboard
