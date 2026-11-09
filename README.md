@@ -48,7 +48,7 @@ One server and one web page monitor two silo systems:
 
 Behind the login box, an animated background in two canvas layers (drawn in code, no video, GIF or external files):
 
-- **Bulk product falling into a silo** (bottom layer): the inside of a silo with a soft light beam from the loading inlet, a stream of grains falling from it onto a pile with a rounded top and its angle of repose, grains that bounce and roll down the slope, and dust floating in the light. The pile texture is drawn once per screen size. Grain tones by default; `PALETTES.prill` in the login script switches to white ammonium nitrate prills.
+- **Bulk product falling into a silo** (bottom layer): the inside of a silo with a soft light beam from the loading inlet, a stream of grains falling from it onto a pile with a rounded top and its angle of repose, grains that bounce and roll down the slope, and dust floating in the light. The pile texture is drawn once per screen size. The product is drawn as white pearly ammonium nitrate prills (`PALETTES.prill`); `PALETTES.grano` (golden grain tones) remains available in the login script.
 - **Radar** (top layer): range rings, a sweep that turns every 6 s with a fading trail, echo pulses and targets that light up as the sweep passes.
 
 A navy veil keeps the login box readable. Both layers pause when the tab is hidden and stay still when the device asks for reduced motion.

@@ -338,12 +338,12 @@
       var ctx = canvas.getContext("2d");
       var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // Paleta del producto: "grano" (tonos de la foto de referencia) o "prill" (nitrato, blanco perlado)
+      // Paleta del producto: "prill" (nitrato de amonio, blanco perlado; la de uso) o "grano" (tonos dorados)
       var PALETTES = {
         grano: { grains: ["#e2b56a", "#cf9a4c", "#eccb8c", "#b57a35", "#f3dcaa", "#9c6428"], light: "245, 196, 120", base: ["#5a3a17", "#2a1a0b"] },
         prill: { grains: ["#eef2f6", "#d6dee8", "#fbfdff", "#bfcad8", "#e3e9f0", "#a9b6c6"], light: "214, 228, 245", base: ["#55606e", "#232a35"] }
       };
-      var P = PALETTES[(window.ARGOSS_GRANEL || "grano")] || PALETTES.grano;
+      var P = PALETTES[(window.ARGOSS_GRANEL || "prill")] || PALETTES.prill;
 
       var REPOSE = Math.tan(31 * Math.PI / 180);   // ángulo de reposo del talud
       var G = 1100;                                // gravedad (px/s²)
