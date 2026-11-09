@@ -23,8 +23,8 @@
     background: #0b1220;
     overflow: hidden;
   }
-  /* Fondo animado: radar (canvas a pantalla completa, detrás del cuadro de login) */
-  #radarBg {
+  /* Fondo animado: producto a granel cayendo (abajo) y radar (encima), detrás del cuadro de login */
+  #bulkBg, #radarBg {
     position: fixed;
     inset: 0;
     width: 100%;
@@ -198,6 +198,7 @@
 </style>
 </head>
 <body>
+  <canvas id="bulkBg" aria-hidden="true"></canvas>
   <canvas id="radarBg" aria-hidden="true"></canvas>
   <div class="card">
     <h1 aria-label="ARGOSS">ARG<span class="radar-letter"><span class="visually-hidden">O</span><svg class="radar-o" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle class="r-ring" cx="50" cy="50" r="44"/><circle class="r-thin" cx="50" cy="50" r="25"/><g class="r-sweep"><g class="r-green"><path d="M50 50L27.92 18.46A38.5 38.5 0 0 1 33.53 15.20Z" fill-opacity="0.069"/><path d="M50 50L33.35 15.29A38.5 38.5 0 0 1 39.42 12.98Z" fill-opacity="0.138"/><path d="M50 50L39.23 13.04A38.5 38.5 0 0 1 45.59 11.75Z" fill-opacity="0.206"/><path d="M50 50L45.39 11.78A38.5 38.5 0 0 1 51.88 11.55Z" fill-opacity="0.275"/><path d="M50 50L51.68 11.54A38.5 38.5 0 0 1 58.12 12.37Z" fill-opacity="0.344"/><path d="M50 50L57.92 12.32A38.5 38.5 0 0 1 64.14 14.19Z" fill-opacity="0.413"/><path d="M50 50L63.95 14.12A38.5 38.5 0 0 1 69.79 16.97Z" fill-opacity="0.481"/><path d="M50 50L69.61 16.87A38.5 38.5 0 0 1 74.90 20.64Z" fill-opacity="0.550"/></g><line class="r-needle" x1="50" y1="50" x2="74.75" y2="20.51"/></g><circle class="r-green" cx="57.8" cy="21.0" r="4"/><circle class="r-green" cx="33.1" cy="56.2" r="3" fill-opacity="0.5"/><circle class="r-hub" cx="50" cy="50" r="4.5"/></svg></span>SS</h1>
@@ -322,6 +323,229 @@
           form.addEventListener("submit", function () { store(select.value); });
         })
         .catch(function () { /* sin lista: login local de siempre */ });
+    })();
+  </script>
+
+  <script>
+    // ===== FONDO: PRODUCTO A GRANEL CAYENDO DENTRO DEL SILO (bajo el radar) =====
+    // Dibujo propio en canvas: interior del silo, chorro de producto que cae desde la tolva de carga,
+    // pila con su ángulo de reposo (textura de gránulos dibujada una vez por tamaño de pantalla),
+    // gránulos que rebotan y ruedan por el talud, y partículas flotando en la luz.
+    // Con "reducir animaciones" queda una imagen fija.
+    (function () {
+      var canvas = document.getElementById("bulkBg");
+      if (!canvas || !canvas.getContext) return;
+      var ctx = canvas.getContext("2d");
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Paleta del producto: "grano" (tonos de la foto de referencia) o "prill" (nitrato, blanco perlado)
+      var PALETTES = {
+        grano: { grains: ["#e2b56a", "#cf9a4c", "#eccb8c", "#b57a35", "#f3dcaa", "#9c6428"], light: "245, 196, 120", base: ["#5a3a17", "#2a1a0b"] },
+        prill: { grains: ["#eef2f6", "#d6dee8", "#fbfdff", "#bfcad8", "#e3e9f0", "#a9b6c6"], light: "214, 228, 245", base: ["#55606e", "#232a35"] }
+      };
+      var P = PALETTES[(window.ARGOSS_GRANEL || "grano")] || PALETTES.grano;
+
+      var REPOSE = Math.tan(31 * Math.PI / 180);   // ángulo de reposo del talud
+      var G = 1100;                                // gravedad (px/s²)
+      var w = 0, h = 0, cx = 0, peakY = 0, dpr = 1, scale = 1;
+      var pile = null, back = null;                // texturas fuera de pantalla: pila y fondo fijo
+      var parts = [], motes = [];
+
+      function surfaceY(x) {                       // superficie de la pila: cono con cima redondeada
+        var dx = x - cx, r = 190 * scale;
+        return peakY + (Math.sqrt(dx * dx + r * r) - r) * REPOSE;
+      }
+      function rnd(a, b) { return a + Math.random() * (b - a); }
+      function gauss() { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
+      function pick(arr) { return arr[(Math.random() * arr.length) | 0]; }
+
+      function buildPile() {
+        pile = document.createElement("canvas");
+        pile.width = Math.round(w * dpr); pile.height = Math.round(h * dpr);
+        var p = pile.getContext("2d");
+        p.setTransform(dpr, 0, 0, dpr, 0, 0);
+        p.save();
+        p.beginPath(); p.moveTo(0, h);
+        for (var x = 0; x <= w; x += 4) p.lineTo(x, surfaceY(x));
+        p.lineTo(w, h); p.closePath(); p.clip();
+        var bg = p.createLinearGradient(0, peakY, 0, h);
+        bg.addColorStop(0, P.base[0]); bg.addColorStop(1, P.base[1]);
+        p.fillStyle = bg; p.fillRect(0, 0, w, h);
+        // gránulos: más luz cerca de la cima (donde cae el chorro), sombra hacia los bordes y abajo
+        var n = Math.min(60000, Math.round(w * (h - peakY) / 3.2));
+        for (var i = 0; i < n; i++) {
+          var gx = Math.random() * w, sy = surfaceY(gx);
+          if (sy > h) continue;
+          var gy = sy + Math.pow(Math.random(), 1.3) * (h - sy + 4);
+          var dist = Math.hypot((gx - cx - 60 * scale) / (w * 0.42), (gy - peakY - 40 * scale) / (h * 0.42));
+          var lit = Math.max(0.08, 1 - dist);
+          if (gx < cx - 40 * scale && gy > surfaceY(gx) + 30 * scale) lit *= 0.55;   // lado en sombra
+          p.globalAlpha = 0.2 + 0.8 * lit;
+          p.fillStyle = pick(P.grains);
+          var s = rnd(1.0, 1.9) * scale;
+          p.beginPath(); p.ellipse(gx, gy, s, s * rnd(0.55, 0.8), Math.random() * Math.PI, 0, Math.PI * 2); p.fill();
+          if (Math.random() < 0.12) {             // brillo en algunos gránulos
+            p.globalAlpha = 0.5 * lit; p.fillStyle = "#ffffff";
+            p.beginPath(); p.arc(gx - s * 0.3, gy - s * 0.25, s * 0.35, 0, Math.PI * 2); p.fill();
+          }
+        }
+        p.restore();
+        // borde del talud apenas iluminado
+        p.globalAlpha = 1;
+        p.strokeStyle = "rgba(" + P.light + ", 0.18)"; p.lineWidth = 1.5;
+        p.beginPath();
+        for (var x2 = 0; x2 <= w; x2 += 4) { var y2 = surfaceY(x2); if (x2) p.lineTo(x2, y2); else p.moveTo(x2, y2); }
+        p.stroke();
+      }
+
+      function buildBack() {
+        back = document.createElement("canvas");
+        back.width = Math.round(w * dpr); back.height = Math.round(h * dpr);
+        var b = back.getContext("2d");
+        b.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var wall = b.createLinearGradient(0, 0, w, 0);   // paredes curvas del silo
+        wall.addColorStop(0, "rgba(255, 255, 255, 0.04)");
+        wall.addColorStop(0.14, "rgba(255, 255, 255, 0)");
+        wall.addColorStop(0.86, "rgba(255, 255, 255, 0)");
+        wall.addColorStop(1, "rgba(255, 255, 255, 0.04)");
+        b.fillStyle = wall; b.fillRect(0, 0, w, h);
+        // haz de luz difuso desde la tolva: elipses superpuestas que se abren hacia abajo
+        for (var i = 0; i < 24; i++) {
+          var f = i / 23, y = f * peakY, rx = 50 * scale + f * w * 0.2;
+          var g = b.createRadialGradient(cx, y, 0, cx, y, rx);
+          g.addColorStop(0, "rgba(" + P.light + ", " + (0.022 * (1 - f * 0.5)).toFixed(4) + ")");
+          g.addColorStop(1, "rgba(" + P.light + ", 0)");
+          b.fillStyle = g; b.fillRect(cx - rx, y - rx, rx * 2, rx * 2);
+        }
+        b.fillStyle = "rgba(148, 163, 184, 0.18)";        // boca de la tolva de carga
+        b.fillRect(cx - 26 * scale, 0, 52 * scale, 8 * scale);
+      }
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = window.innerWidth; h = window.innerHeight;
+        canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        scale = Math.max(0.7, Math.min(1.3, Math.min(w, h) / 800));
+        cx = w / 2; peakY = h * (w < 600 ? 0.80 : 0.74);
+        parts = []; motes = [];
+        for (var i = 0; i < 40; i++) motes.push({ x: rnd(0, w), y: rnd(0, peakY), vx: rnd(-6, 6), vy: rnd(-4, 4), s: rnd(0.6, 1.6), a: rnd(0.15, 0.5), ph: rnd(0, 6.3) });
+        buildBack(); buildPile();
+      }
+
+      function spawn(dt) {
+        var n = Math.round(dt * 650 * (0.85 + Math.random() * 0.3));
+        for (var i = 0; i < n; i++) {
+          var z = rnd(0.55, 1.35);                  // profundidad: tamaño y brillo
+          parts.push({
+            x: cx + gauss() * 9 * scale, y: rnd(-30, 8),
+            vx: gauss() * 30 * scale, vy: rnd(140, 260),
+            z: z, s: rnd(0.9, 1.8) * scale * z, c: pick(P.grains),
+            st: 0, life: 0, a: Math.min(1, 0.35 + z * 0.5)
+          });
+        }
+      }
+
+      function step(dt) {
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var q = parts[i];
+          q.life += dt;
+          if (q.st < 2) {                           // en el aire (cayendo o rebotando)
+            q.vy += G * dt; q.x += q.vx * dt; q.y += q.vy * dt;
+            var sy = surfaceY(q.x) + (q.z - 1) * 18 * scale;
+            if (q.y >= sy && q.vy > 0) {
+              q.y = sy;
+              if (q.st === 0 && Math.random() < 0.7) {      // rebote corto, hacia afuera
+                q.st = 1; q.vy = -q.vy * rnd(0.15, 0.38);
+                q.vx = (Math.random() < 0.5 ? -1 : 1) * rnd(40, 220) * scale + q.vx * 0.3;
+              } else {                                          // queda rodando por el talud
+                q.st = 2; q.life = 0; q.ttl = rnd(0.4, 1.4); q.vy = 0;
+                q.vx = (q.x < cx ? -1 : 1) * rnd(40, 110) * scale;
+              }
+            }
+          } else {                                  // rodando: baja por la pendiente y frena
+            q.vx *= Math.pow(0.25, dt);
+            q.x += q.vx * dt; q.y = surfaceY(q.x) + (q.z - 1) * 18 * scale;
+            if (q.life > q.ttl) { parts.splice(i, 1); continue; }
+          }
+          if (q.y > h + 20 || q.x < -20 || q.x > w + 20) parts.splice(i, 1);
+        }
+        for (var m = 0; m < motes.length; m++) {
+          var o = motes[m];
+          o.x += o.vx * dt; o.y += o.vy * dt;
+          if (o.x < 0) o.x += w; if (o.x > w) o.x -= w;
+          if (o.y < 0) o.y += peakY; if (o.y > peakY) o.y -= peakY;
+        }
+      }
+
+      function drawScene(t) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(back, 0, 0, w, h);
+        // núcleo del chorro: columna tenue continua (se lee como flujo, no como puntos sueltos)
+        var core = ctx.createLinearGradient(cx - 12 * scale, 0, cx + 12 * scale, 0);
+        core.addColorStop(0, "rgba(" + P.light + ", 0)");
+        core.addColorStop(0.5, "rgba(" + P.light + ", 0.10)");
+        core.addColorStop(1, "rgba(" + P.light + ", 0)");
+        ctx.fillStyle = core; ctx.fillRect(cx - 12 * scale, 0, 24 * scale, peakY);
+
+        ctx.drawImage(pile, 0, 0, w, h);
+
+        // resplandor donde cae el chorro
+        var glow = ctx.createRadialGradient(cx, peakY, 0, cx, peakY, 220 * scale);
+        glow.addColorStop(0, "rgba(" + P.light + ", 0.26)");
+        glow.addColorStop(1, "rgba(" + P.light + ", 0)");
+        ctx.fillStyle = glow; ctx.fillRect(cx - 230 * scale, peakY - 230 * scale, 460 * scale, 460 * scale);
+
+        // partículas flotando en la luz
+        for (var m = 0; m < motes.length; m++) {
+          var o = motes[m];
+          ctx.globalAlpha = o.a * (0.6 + 0.4 * Math.sin(t * 1.3 + o.ph));
+          ctx.fillStyle = "rgba(" + P.light + ", 1)";
+          ctx.beginPath(); ctx.arc(o.x, o.y, o.s, 0, Math.PI * 2); ctx.fill();
+        }
+        // gránulos en movimiento: estela corta según la velocidad
+        ctx.lineCap = "round";
+        for (var i = 0; i < parts.length; i++) {
+          var q = parts[i];
+          var fade = q.st === 2 ? Math.max(0, 1 - q.life / q.ttl) : 1;
+          ctx.globalAlpha = q.a * fade;
+          ctx.strokeStyle = q.c; ctx.lineWidth = q.s;
+          if (q.st === 2) {                          // rodando: punto que se desliza por el talud
+            ctx.fillStyle = q.c;
+            ctx.beginPath(); ctx.arc(q.x, q.y, q.s * 0.6, 0, Math.PI * 2); ctx.fill();
+            continue;
+          }
+          ctx.beginPath(); ctx.moveTo(q.x - q.vx * 0.009, q.y - q.vy * 0.009); ctx.lineTo(q.x, q.y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        // velo azul marino: el producto queda de fondo y el login y el radar siguen siendo protagonistas
+        ctx.fillStyle = "rgba(11, 18, 32, 0.38)";
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      var start = null, prev = null, running = true;
+      function loop(ts) {
+        if (!running) return;
+        if (start === null) { start = ts; prev = ts; }
+        var dt = Math.min(0.05, (ts - prev) / 1000);
+        spawn(dt); step(dt); drawScene((ts - start) / 1000);
+        prev = ts;
+        requestAnimationFrame(loop);
+      }
+      function still() {                            // imagen fija: chorro ya formado
+        parts = [];
+        for (var i = 0; i < 90; i++) { spawn(1 / 60); step(1 / 60); }
+        drawScene(0);
+      }
+
+      resize();
+      window.addEventListener("resize", function () { resize(); if (reduce) still(); });
+      if (reduce) { still(); return; }
+      document.addEventListener("visibilitychange", function () {
+        running = !document.hidden;
+        if (running) { start = null; requestAnimationFrame(loop); }
+      });
+      requestAnimationFrame(loop);
     })();
   </script>
 

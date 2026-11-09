@@ -100,9 +100,6 @@
       "Consumo 30 d": "Consumption 30 d",
       "Recepción 30 d": "Reception 30 d",
       "Recargas": "Refills",
-      "Saltos": "Jumps",
-      "Saltos bruscos descartados en 30 días (cortes de energía o reinicios del sensor/HMI). No se cuentan como consumo, recepción ni recarga.":
-        "Sudden jumps discarded in 30 days (power cuts or sensor/HMI restarts). Not counted as consumption, reception or refill.",
       "Ruido radar": "Radar noise",
       "Ruido promedio de la lectura del radar (1σ, en toneladas). Un aumento sostenido puede indicar un problema del sensor.":
         "Average noise of the radar reading (1σ, in tonnes). A sustained increase may indicate a sensor problem.",
