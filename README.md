@@ -127,7 +127,9 @@ The nitrate model lives in `lib/nitrato-model.js` and is shared by the server an
 
 #### Wall build-up (acolpado)
 
-Nitrate silos always have product stuck to the walls (*acolpado*). It raises the level the radar sees but is not available product. A constant tonnage per silo is set in **`acolpadoNitrato.json`** and deducted from that silo's mass:
+Nitrate silos have product stuck to the side walls of the rectangular section (*acolpado*); there is none in the hopper. ARGOSS **does not deduct it**: level, volume, fill % and tonnes always show the real measurement. The build-up is shown as an **informative note** on the silo card.
+
+The tonnage per silo is set in **`acolpadoNitrato.json`**:
 
 ```json
 {
@@ -143,11 +145,9 @@ Nitrate silos always have product stuck to the walls (*acolpado*). It raises the
 ```
 
 - Values are tonnes. Silo 1 starts at **9.6 t** (measured in field tests); the others at 0.
-- **Deducted from:** the tonnes on each silo card, the Nitrate plant total and its chart, the 07:00 / 19:00 shift record, the plant-capacity gauge and the daily Excel. Available tonnes = measured tonnes − build-up, never below 0.
-- **Not changed:** the level (m), the volume (m³) and the **fill % and gauge**, which keep showing the physical measurement (the real level in the silo). The Indicators (consumption, receptions, refills) are computed from level changes, so a constant build-up does not affect them.
-- Silos with build-up show a small **Acolpado: −9,6 t** line under the density on their card.
-- The file is created automatically on first start and is ignored by Git, so `git pull` never overwrites it. To change a value, edit it on the server (for example `nano acolpadoNitrato.json`); the change is applied within about 5 seconds, without restarting, and recorded in the event log as **Acolpado modificado** (Admin, *Operación*) with the old and new values. Invalid values (text, negative numbers) are ignored (0 t is used) and logged as a warning.
-- Stored history is not rewritten: the plant total chart shows a step on the day the build-up is applied or changed.
+- When a silo has a value above 0 **and its level is above the hopper (1.94 m)**, its card shows **Zona de acolpamiento: 9,6 t** in amber, in the bottom-left corner next to the product selector (under the density on phones). In the hopper zone, or with 0 t, the note is hidden. It does not change the card size.
+- No calculation uses it: plant totals, shift record, capacity gauge, Excel, Indicators and events are all based on the measured values.
+- The file is created automatically on first start and is ignored by Git, so `git pull` never overwrites it. To change a value (build-up removed or increased), edit it on the server (for example `nano acolpadoNitrato.json`); the note updates within about 5 seconds, without restarting, and the change is recorded in the event log as **Acolpado modificado** (Admin, *Operación*) with the old and new values. Invalid values (text, negative numbers) are ignored (0 t) and logged as a warning.
 
 ### Recalculating history after a model change
 
@@ -355,7 +355,7 @@ scada-silos-bronces/
 │   ├── matriz.js             ← Matriz backend   (Socket.IO /matriz,  routes /matriz/*)
 │   ├── nitrato.js            ← Nitrate backend  (Socket.IO /nitrato, routes /nitrato/*)
 │   ├── nitrato-model.js      ← Nitrate geometry, radar calibration, level and volume
-│   ├── acolpado.js           ← Nitrate wall build-up: reads and watches acolpadoNitrato.json
+│   ├── acolpado.js           ← Nitrate wall build-up note: reads and watches acolpadoNitrato.json
 │   ├── kpi.js                ← Consumption / reception / per-silo indicators
 │   └── eventos.js            ← Event log: recording, monitoring, query and export
 ├── tools/
@@ -379,7 +379,7 @@ scada-silos-bronces/
 ├── docs/login.png            ← Login screenshot
 ├── template.xlsx             ← Daily Excel template (both systems)
 ├── siloConfig.json           ← Product per Matriz silo
-├── acolpadoNitrato.json      ← Wall build-up per nitrate silo, in tonnes (created at first start, not in Git)
+├── acolpadoNitrato.json      ← Wall build-up per nitrate silo, in tonnes; informative card note (created at first start, not in Git)
 ├── plantas.json              ← Plants shown in the login selector
 ├── generate-hash.js          ← bcrypt hash generator for user passwords
 ├── ecosystem.config.js       ← PM2
@@ -433,7 +433,7 @@ The version shown next to ARGOSS is the `version` field of [`package.json`](pack
 | 2.0 | Matriz + Nitrate in one system |
 | **3.0** | ARGOSS: Indicators, Events, multi-plant login, argoss.cl |
 | **3.1** | Per-user settings panel: dark / light appearance, Spanish / English interface; REAL/DEMO, downloads and logout move into the panel (3.1.1) |
-| **3.2** | Nitrate wall build-up (`acolpadoNitrato.json`) deducted from tonnes; level and % stay physical |
+| **3.2** | Nitrate wall build-up (`acolpadoNitrato.json`) shown as an informative card note above the hopper; all values stay measured (3.2.1) |
 
 Convention: `3.0.1`, `3.0.2`… for fixes (a calculation or text adjustment); `3.1`, `3.2`… for new features (a new tab or indicator); a new major version for changes in how the system is deployed or stores data.
 

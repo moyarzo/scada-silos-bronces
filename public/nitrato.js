@@ -87,10 +87,9 @@ function calculateMassTon(volume, product) {
   return (volume * PRODUCTS[product].density) / 1000;
 }
 
-// Toneladas disponibles de un silo: masa medida menos el acolpado (nitrato pegado a las paredes).
-// El nivel y el % de llenado siguen siendo la medición física.
+// Toneladas de un silo: masa medida (el acolpado es solo una nota en la tarjeta, no se descuenta)
 function siloTon(t) {
-  return Math.max(0, calculateMassTon(t.volume, t.product) - (t.acolpadoTon || 0));
+  return calculateMassTon(t.volume, t.product);
 }
 
 // ===== ETIQUETAS TEMPORALES =====
@@ -503,7 +502,7 @@ function render() {
             <div>${t.volume.toFixed(2)} m³</div>
             <div class="tank-mass">${siloTon(t).toFixed(2)} ton</div>
             <div>${product.density} kg/m³</div>
-            ${t.acolpadoTon > 0 ? `<div class="tank-acolpado" title="${window.t("Acolpado: nitrato pegado a las paredes. Ya está descontado de las toneladas; el nivel y el % muestran la medición física.")}">${window.t("Acolpado")}: −${t.acolpadoTon.toLocaleString(window.ARGOSS_LOCALE || "es-CL", { maximumFractionDigits: 2 })} t</div>` : ""}
+            ${t.acolpadoTon > 0 && t.levelMeters > N_TOLVA_HEIGHT ? `<div class="tank-acolpado" title="${window.t("Nivel sobre la tolva: parte de las toneladas medidas corresponde a nitrato pegado a las paredes (acolpado). Valor informativo, no se descuenta.")}">${window.t("Zona de acolpamiento")}:<br>${t.acolpadoTon.toLocaleString(window.ARGOSS_LOCALE || "es-CL", { maximumFractionDigits: 2 })} t</div>` : ""}
           </div>
           <div class="gauge-container compact-gauge">${createGauge(percent, product.color)}</div>
         </div>

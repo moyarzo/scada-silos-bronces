@@ -101,9 +101,9 @@
       "Recepción 30 d": "Reception 30 d",
       "Recargas": "Refills",
       "Ruido radar": "Radar noise",
-      "Acolpado": "Wall build-up",
-      "Acolpado: nitrato pegado a las paredes. Ya está descontado de las toneladas; el nivel y el % muestran la medición física.":
-        "Wall build-up: nitrate stuck to the silo walls. Already deducted from the tonnes; level and % show the physical measurement.",
+      "Zona de acolpamiento": "Wall build-up zone",
+      "Nivel sobre la tolva: parte de las toneladas medidas corresponde a nitrato pegado a las paredes (acolpado). Valor informativo, no se descuenta.":
+        "Level above the hopper: part of the measured tonnes is nitrate stuck to the walls (build-up). Informative only, not deducted.",
       "Ruido promedio de la lectura del radar (1σ, en toneladas). Un aumento sostenido puede indicar un problema del sensor.":
         "Average noise of the radar reading (1σ, in tonnes). A sustained increase may indicate a sensor problem.",
       "sin datos": "no data",
