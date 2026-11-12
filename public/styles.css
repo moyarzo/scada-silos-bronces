@@ -508,6 +508,14 @@ body {
   color: var(--text);
 }
 
+/* Acolpado descontado (silos de Nitrato): nota discreta bajo la densidad */
+.tank-left-data .tank-acolpado {
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: help;
+  white-space: nowrap;
+}
+
 .compact-gauge {
   height: auto;
   min-width: 135px;

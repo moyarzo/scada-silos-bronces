@@ -125,6 +125,30 @@ The radar cannot see the bottom of the two final hoppers (an empty silo reads ab
 
 The nitrate model lives in `lib/nitrato-model.js` and is shared by the server and the history recalculation tool, so both always compute the same way.
 
+#### Wall build-up (acolpado)
+
+Nitrate silos always have product stuck to the walls (*acolpado*). It raises the level the radar sees but is not available product. A constant tonnage per silo is set in **`acolpadoNitrato.json`** and deducted from that silo's mass:
+
+```json
+{
+  "tanque1": 9.6,
+  "tanque2": 0,
+  "tanque3": 0,
+  "tanque4": 0,
+  "tanque5": 0,
+  "tanque6": 0,
+  "tanque7": 0,
+  "tanque8": 0
+}
+```
+
+- Values are tonnes. Silo 1 starts at **9.6 t** (measured in field tests); the others at 0.
+- **Deducted from:** the tonnes on each silo card, the Nitrate plant total and its chart, the 07:00 / 19:00 shift record, the plant-capacity gauge and the daily Excel. Available tonnes = measured tonnes − build-up, never below 0.
+- **Not changed:** the level (m), the volume (m³) and the **fill % and gauge**, which keep showing the physical measurement (the real level in the silo). The Indicators (consumption, receptions, refills) are computed from level changes, so a constant build-up does not affect them.
+- Silos with build-up show a small **Acolpado: −9,6 t** line under the density on their card.
+- The file is created automatically on first start and is ignored by Git, so `git pull` never overwrites it. To change a value, edit it on the server (for example `nano acolpadoNitrato.json`); the change is applied within about 5 seconds, without restarting, and recorded in the event log as **Acolpado modificado** (Admin, *Operación*) with the old and new values. Invalid values (text, negative numbers) are ignored (0 t is used) and logged as a warning.
+- Stored history is not rewritten: the plant total chart shows a step on the day the build-up is applied or changed.
+
 ### Recalculating history after a model change
 
 History stores computed values (tonnes and %). When the calculation model changes, older points keep the old model and the chart shows a step. `tools/recalcular-historial-nitrato.js` rebuilds the original radar reading from each stored % and recomputes every point with the current model (per silo, plant total and shift record), with an automatic backup in `backups/`:
@@ -331,6 +355,7 @@ scada-silos-bronces/
 │   ├── matriz.js             ← Matriz backend   (Socket.IO /matriz,  routes /matriz/*)
 │   ├── nitrato.js            ← Nitrate backend  (Socket.IO /nitrato, routes /nitrato/*)
 │   ├── nitrato-model.js      ← Nitrate geometry, radar calibration, level and volume
+│   ├── acolpado.js           ← Nitrate wall build-up: reads and watches acolpadoNitrato.json
 │   ├── kpi.js                ← Consumption / reception / per-silo indicators
 │   └── eventos.js            ← Event log: recording, monitoring, query and export
 ├── tools/
@@ -354,6 +379,7 @@ scada-silos-bronces/
 ├── docs/login.png            ← Login screenshot
 ├── template.xlsx             ← Daily Excel template (both systems)
 ├── siloConfig.json           ← Product per Matriz silo
+├── acolpadoNitrato.json      ← Wall build-up per nitrate silo, in tonnes (created at first start, not in Git)
 ├── plantas.json              ← Plants shown in the login selector
 ├── generate-hash.js          ← bcrypt hash generator for user passwords
 ├── ecosystem.config.js       ← PM2
@@ -372,7 +398,7 @@ scada-silos-bronces/
 | `exports/stock_diario_YYYYMMDD.xlsx` | `exports/stock_nitrato_YYYYMMDD.xlsx` | Daily Excel report |
 | `historial_YYYYMMDD.csv` | `resumen_nitrato_YYYYMMDD.csv` | 30-day CSV export |
 
-Shared by both systems: `eventos/eventos_YYYY-MM.jsonl` (event log, 3 months) and `userPrefs.json` (appearance and language per user). Both are ignored by Git, so `git pull` never touches them.
+Shared by both systems: `eventos/eventos_YYYY-MM.jsonl` (event log, 3 months) and `userPrefs.json` (appearance and language per user). Nitrate only: `acolpadoNitrato.json` (wall build-up per silo, see [Wall build-up](#wall-build-up-acolpado)). All are ignored by Git, so `git pull` never touches them.
 
 ### HTTP routes
 
@@ -407,6 +433,7 @@ The version shown next to ARGOSS is the `version` field of [`package.json`](pack
 | 2.0 | Matriz + Nitrate in one system |
 | **3.0** | ARGOSS: Indicators, Events, multi-plant login, argoss.cl |
 | **3.1** | Per-user settings panel: dark / light appearance, Spanish / English interface; REAL/DEMO, downloads and logout move into the panel (3.1.1) |
+| **3.2** | Nitrate wall build-up (`acolpadoNitrato.json`) deducted from tonnes; level and % stay physical |
 
 Convention: `3.0.1`, `3.0.2`… for fixes (a calculation or text adjustment); `3.1`, `3.2`… for new features (a new tab or indicator); a new major version for changes in how the system is deployed or stores data.
 

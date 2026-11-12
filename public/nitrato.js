@@ -87,6 +87,12 @@ function calculateMassTon(volume, product) {
   return (volume * PRODUCTS[product].density) / 1000;
 }
 
+// Toneladas disponibles de un silo: masa medida menos el acolpado (nitrato pegado a las paredes).
+// El nivel y el % de llenado siguen siendo la medición física.
+function siloTon(t) {
+  return Math.max(0, calculateMassTon(t.volume, t.product) - (t.acolpadoTon || 0));
+}
+
 // ===== ETIQUETAS TEMPORALES =====
 
 function getRounded5MinLabel() {
@@ -385,7 +391,7 @@ function computeLiveTotals() {
   const totals = { "Nitrato": 0 };
   Object.keys(getViewTanks()).forEach(key => {
     const t = getViewTanks()[key];
-    totals[t.product] = (totals[t.product] || 0) + calculateMassTon(t.volume, t.product);
+    totals[t.product] = (totals[t.product] || 0) + siloTon(t);
   });
   return totals;
 }
@@ -495,8 +501,9 @@ function render() {
           <div class="tank-left-data">
             <div>${t.approx ? "≈ " : ""}${t.levelMeters.toFixed(2)} m</div>
             <div>${t.volume.toFixed(2)} m³</div>
-            <div class="tank-mass">${calculateMassTon(t.volume, t.product).toFixed(2)} ton</div>
+            <div class="tank-mass">${siloTon(t).toFixed(2)} ton</div>
             <div>${product.density} kg/m³</div>
+            ${t.acolpadoTon > 0 ? `<div class="tank-acolpado" title="${window.t("Acolpado: nitrato pegado a las paredes. Ya está descontado de las toneladas; el nivel y el % muestran la medición física.")}">${window.t("Acolpado")}: −${t.acolpadoTon.toLocaleString(window.ARGOSS_LOCALE || "es-CL", { maximumFractionDigits: 2 })} t</div>` : ""}
           </div>
           <div class="gauge-container compact-gauge">${createGauge(percent, product.color)}</div>
         </div>
@@ -564,6 +571,7 @@ socket.on("siloState", backendState => {
       volume:      backendState[tanque].volume      || 0,
       percent:     backendState[tanque].percent     || 0,
       approx:      !!backendState[tanque].approx,
+      acolpadoTon: Number(backendState[tanque].acolpadoTon) || 0,   // acolpadoNitrato.json (servidor)
       product:     "Nitrato"
     };
   });
