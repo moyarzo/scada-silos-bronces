@@ -133,7 +133,7 @@ The tonnage per silo is set in **`acolpadoNitrato.json`**:
 
 ```json
 {
-  "tanque1": 9.6,
+  "tanque1": 9.8,
   "tanque2": 0,
   "tanque3": 0,
   "tanque4": 0,
@@ -144,8 +144,8 @@ The tonnage per silo is set in **`acolpadoNitrato.json`**:
 }
 ```
 
-- Values are tonnes. Silo 1 starts at **9.6 t** (measured in field tests); the others at 0.
-- When a silo has a value above 0 **and its level is above the hopper (1.94 m)**, its card shows **Zona de acolpamiento: 9,6 t** in amber, in the bottom-left corner next to the product selector (under the density on phones). In the hopper zone, or with 0 t, the note is hidden. It does not change the card size.
+- Values are tonnes. Silo 1 starts at **9.8 t** (measured in field tests); the others at 0.
+- When a silo has a value above 0 **and its level is above the hopper (1.94 m)**, its card shows **Zona de acolpamiento: 9,8 t** in amber, in the bottom-left corner next to the product selector (under the density on phones). In the hopper zone, or with 0 t, the note is hidden. It does not change the card size.
 - No calculation uses it: plant totals, shift record, capacity gauge, Excel, Indicators and events are all based on the measured values.
 - The file is created automatically on first start and is ignored by Git, so `git pull` never overwrites it. To change a value (build-up removed or increased), edit it on the server (for example `nano acolpadoNitrato.json`); the note updates within about 5 seconds, without restarting, and the change is recorded in the event log as **Acolpado modificado** (Admin, *Operación*) with the old and new values. Invalid values (text, negative numbers) are ignored (0 t) and logged as a warning.
 
